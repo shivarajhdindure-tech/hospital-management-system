@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard — MedCare HMS</title>
+
+    <!-- Shared stylesheet -->
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <!-- ═══════════════════════════════════════════════════════════
+     MOBILE SIDEBAR OVERLAY
+     Dark backdrop shown on mobile when sidebar is open.
+     Clicking it closes the sidebar.
+══════════════════════════════════════════════════════════════ -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+     APP SHELL — flex container holding sidebar + main content
+══════════════════════════════════════════════════════════════ -->
+    <div class="app-shell">
+      <!-- ─────────────────────────────────────────────────────────
+       SIDEBAR NAVIGATION
+  ────────────────────────────────────────────────────────── -->
+      <aside class="sidebar" id="sidebar">
+        <!-- Brand / Logo -->
+        <div class="sidebar-brand">
+          <div class="brand-icon">🏥</div>
+          <div class="brand-text">
+            <h2>MedCare</h2>
+            <span>Hospital System</span>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="sidebar-nav">
+          <!-- Main section -->
+          <div class="nav-section-label">Main Menu</div>
+
+          <!-- data-page matches the HTML filename for auto-active highlighting -->
+          <div
+            class="nav-item active"
+            data-page="dashboard.html"
+            onclick="location.href = 'dashboard.html'">
+            <span class="nav-icon">📊</span>
+            Dashboard
+          </div>
+
+          <div
+            class="nav-item"
+            data-page="appointments.html"
+            onclick="location.href = 'appointments.html'">
+            <span class="nav-icon">📅</span>
+            Appointments
+            <span class="nav-badge">5</span>
+          </div>
+
+          <div
+            class="nav-item"
+            data-page="patients.html"
+            onclick="location.href = 'patients.html'">
+            <span class="nav-icon">🧑‍⚕️</span>
+            Patients
+          </div>
+
+          <div
+            class="nav-item"
+            data-page="doctors.html"
+            onclick="location.href = 'doctors.html'">
+            <span class="nav-icon">👨‍⚕️</span>
+            Doctors
+          </div>
+
+          <!-- Management section -->
+          <div class="nav-section-label">Management</div>
+
+          <div
+            class="nav-item"
+            data-page="billing.html"
+            onclick="location.href = 'billing.html'">
+            <span class="nav-icon">💳</span>
+            Billing
+          </div>
+
+          <div
+            class="nav-item"
+            data-page="settings.html"
+            onclick="location.href = 'settings.html'">
+            <span class="nav-icon">⚙️</span>
+            Settings
+          </div>
+        </nav>
+
+        <!-- Logged-in user info at bottom of sidebar -->
+        <div class="sidebar-footer">
+          <div class="sidebar-user">
+            <div class="user-avatar">👤</div>
+            <div class="user-info">
+              <h4 id="loggedUserName">Loading...</h4>
+
+              <p id="loggedUserRole">Loading...</p>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-danger" onclick="logoutUser()">Logout</button>
+      </aside>
+      <!-- /sidebar -->
+
+      <!-- ─────────────────────────────────────────────────────────
+       MAIN CONTENT AREA
+  ────────────────────────────────────────────────────────── -->
+      <div class="main-content">
+        <!-- ───────────────────────────────────────────────────────
+         TOP NAVBAR
+    ──────────────────────────────────────────────────────── -->
+        <header class="topbar">
+          <!-- Hamburger button — only visible on mobile -->
+          <button
+            class="topbar-toggle"
+            id="sidebarToggle"
+            aria-label="Toggle navigation">
+            ☰
+          </button>
+
+          <!-- Page title -->
+          <div class="topbar-title">Dashboard</div>
+
+          <!-- Search bar -->
+          <!-- <div class="topbar-search">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              placeholder="Search patients, doctors, appointments…" />
+          </div> -->
+
+          <!-- Right-side action buttons -->
+        </header>
+        <!-- /topbar -->
+
+        <!-- ───────────────────────────────────────────────────────
+         PAGE CONTENT
+    ──────────────────────────────────────────────────────── -->
+        <main class="page-content">
+          <!-- Page header row -->
+          <div class="page-header">
+            <div>
+              <h1>Good Morning, Dr. Admin 👋</h1>
+              <p>Here's what's happening at MedCare today.</p>
+            </div>
+            <!-- Button opens the New Appointment modal -->
+            <button
+              class="btn btn-primary"
+              onclick="openModal('newAppointmentModal')">
+              ➕ New Appointment
+            </button>
+          </div>
+
+          <!-- ─────────────────────────────────────────────────────
+           STAT CARDS ROW
+      ──────────────────────────────────────────────────────── -->
+          <div class="stats-grid">
+            <!-- Card 1 — Total Patients -->
+            <div class="stat-card blue">
+              <div class="stat-icon">🧑‍⚕️</div>
+              <div class="stat-info">
+                <!-- id used by JS to inject animated count -->
+                <h3 id="stat-patients">0</h3>
+                <p>Total Patients</p>
+                <div class="stat-change up">▲ 3.2% this month</div>
+              </div>
+            </div>
+
+            <!-- Card 2 — Doctors -->
+            <div class="stat-card teal">
+              <div class="stat-icon">👨‍⚕️</div>
+              <div class="stat-info">
+                <h3 id="stat-doctors">0</h3>
+                <p>Active Doctors</p>
+                <div class="stat-change up">▲ 2 new this week</div>
+              </div>
+            </div>
+
+            <!-- Card 3 — Today's Appointments -->
+            <div class="stat-card green">
+              <div class="stat-icon">📅</div>
+              <div class="stat-info">
+                <h3 id="stat-appointments">0</h3>
+                <p>Today's Appointments</p>
+                <div class="stat-change up">▲ 8 more than yesterday</div>
+              </div>
+            </div>
+
+            <!-- Card 4 — Pending Bills -->
+            <div class="stat-card orange">
+              <div class="stat-icon">💳</div>
+              <div class="stat-info">
+                <h3 id="stat-bills">0</h3>
+                <p>Pending Bills</p>
+                <div class="stat-change down">▼ 4 resolved today</div>
+              </div>
+            </div>
+          </div>
+          <!-- /stats-grid -->
+
+          <!-- ─────────────────────────────────────────────────────
+           MAIN 2-COLUMN GRID
+           Left: Recent appointments table
+           Right: Today's schedule + quick summary
+      ──────────────────────────────────────────────────────── -->
+          <div class="content-grid">
+            <!-- ── LEFT: Recent Appointments Table ────────────── -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2>Recent Appointments</h2>
+                  <p>Showing today's appointment activity</p>
+                </div>
+                <!-- Filter / view all buttons -->
+                <div class="flex gap-8">
+                  <button
+                    class="btn btn-outline btn-sm"
+                    onclick="location.href = 'appointments.html'">
+                    View All
+                  </button>
+                </div>
+              </div>
+
+              <div class="card-body" style="padding: 0">
+                <div class="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Department</th>
+                        <th>Date & Time</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <!-- tbody is filled by JS renderAppointmentsTable() -->
+                    <tbody id="appointmentsTableBody">
+                      <!-- rows injected by app.js -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- /card -->
+
+            <!-- ── RIGHT COLUMN ────────────────────────────────── -->
+            <div style="display: flex; flex-direction: column; gap: 20px">
+              <!-- Today's Schedule card -->
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <h2>Today's Schedule</h2>
+                    <p>12 May 2026</p>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <!-- List populated by JS renderTodaySchedule() -->
+                  <div class="schedule-list" id="scheduleList">
+                    <!-- items injected by app.js -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Summary card -->
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <h2>Appointment Summary</h2>
+                    <p>Today's breakdown</p>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="summary-row">
+                    <div class="summary-item">
+                      <div class="num" style="color: var(--success)">18</div>
+                      <div class="label">Confirmed</div>
+                    </div>
+                    <div class="summary-item">
+                      <div class="num" style="color: var(--warning)">12</div>
+                      <div class="label">Pending</div>
+                    </div>
+                    <div class="summary-item">
+                      <div class="num" style="color: var(--danger)">7</div>
+                      <div class="label">Cancelled</div>
+                    </div>
+                  </div>
+
+                  <!-- Simple visual progress bar -->
+                  <div style="margin-top: 20px">
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        font-size: 12px;
+                        color: var(--text-mid);
+                        margin-bottom: 6px;
+                      ">
+                      <span>Completion rate</span>
+                      <span style="font-weight: 700; color: var(--dark-blue)"
+                        >49%</span
+                      >
+                    </div>
+                    <div
+                      style="
+                        background: var(--border);
+                        border-radius: 20px;
+                        height: 8px;
+                        overflow: hidden;
+                      ">
+                      <div
+                        style="
+                          width: 49%;
+                          height: 100%;
+                          background: linear-gradient(
+                            90deg,
+                            var(--accent-blue),
+                            var(--mid-blue)
+                          );
+                          border-radius: 20px;
+                          transition: width 1s ease;
+                        "></div>
+                    </div>
+                  </div>
+
+                  <!-- Department breakdown -->
+                  <div
+                    style="
+                      margin-top: 20px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 10px;
+                    ">
+                    <div
+                      style="
+                        font-size: 12px;
+                        font-weight: 700;
+                        color: var(--text-mid);
+                        letter-spacing: 1px;
+                        text-transform: uppercase;
+                        margin-bottom: 4px;
+                      ">
+                      By Department
+                    </div>
+
+                    <!-- Each row: dept name + count + mini-bar -->
+                    <div
+                      class="dept-row"
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        font-size: 13px;
+                      ">
+                      <span style="width: 90px; color: var(--text-mid)"
+                        >Cardiology</span
+                      >
+                      <div
+                        style="
+                          flex: 1;
+                          background: var(--border);
+                          border-radius: 20px;
+                          height: 6px;
+                        ">
+                        <div
+                          style="
+                            width: 65%;
+                            height: 100%;
+                            background: var(--accent-blue);
+                            border-radius: 20px;
+                          "></div>
+                      </div>
+                      <span
+                        style="
+                          font-weight: 600;
+                          color: var(--dark-blue);
+                          min-width: 20px;
+                        "
+                        >8</span
+                      >
+                    </div>
+
+                    <div
+                      class="dept-row"
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        font-size: 13px;
+                      ">
+                      <span style="width: 90px; color: var(--text-mid)"
+                        >Neurology</span
+                      >
+                      <div
+                        style="
+                          flex: 1;
+                          background: var(--border);
+                          border-radius: 20px;
+                          height: 6px;
+                        ">
+                        <div
+                          style="
+                            width: 42%;
+                            height: 100%;
+                            background: var(--mid-blue);
+                            border-radius: 20px;
+                          "></div>
+                      </div>
+                      <span
+                        style="
+                          font-weight: 600;
+                          color: var(--dark-blue);
+                          min-width: 20px;
+                        "
+                        >5</span
+                      >
+                    </div>
+
+                    <div
+                      class="dept-row"
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        font-size: 13px;
+                      ">
+                      <span style="width: 90px; color: var(--text-mid)"
+                        >General</span
+                      >
+                      <div
+                        style="
+                          flex: 1;
+                          background: var(--border);
+                          border-radius: 20px;
+                          height: 6px;
+                        ">
+                        <div
+                          style="
+                            width: 58%;
+                            height: 100%;
+                            background: var(--success);
+                            border-radius: 20px;
+                          "></div>
+                      </div>
+                      <span
+                        style="
+                          font-weight: 600;
+                          color: var(--dark-blue);
+                          min-width: 20px;
+                        "
+                        >7</span
+                      >
+                    </div>
+
+                    <div
+                      class="dept-row"
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        font-size: 13px;
+                      ">
+                      <span style="width: 90px; color: var(--text-mid)"
+                        >Pediatrics</span
+                      >
+                      <div
+                        style="
+                          flex: 1;
+                          background: var(--border);
+                          border-radius: 20px;
+                          height: 6px;
+                        ">
+                        <div
+                          style="
+                            width: 30%;
+                            height: 100%;
+                            background: var(--warning);
+                            border-radius: 20px;
+                          "></div>
+                      </div>
+                      <span
+                        style="
+                          font-weight: 600;
+                          color: var(--dark-blue);
+                          min-width: 20px;
+                        "
+                        >4</span
+                      >
+                    </div>
+
+                    <div
+                      class="dept-row"
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        font-size: 13px;
+                      ">
+                      <span style="width: 90px; color: var(--text-mid)"
+                        >Orthopedics</span
+                      >
+                      <div
+                        style="
+                          flex: 1;
+                          background: var(--border);
+                          border-radius: 20px;
+                          height: 6px;
+                        ">
+                        <div
+                          style="
+                            width: 25%;
+                            height: 100%;
+                            background: var(--danger);
+                            border-radius: 20px;
+                          "></div>
+                      </div>
+                      <span
+                        style="
+                          font-weight: 600;
+                          color: var(--dark-blue);
+                          min-width: 20px;
+                        "
+                        >3</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- /quick summary card -->
+            </div>
+            <!-- /right column -->
+          </div>
+          <!-- /content-grid -->
+        </main>
+        <!-- /page-content -->
+      </div>
+      <!-- /main-content -->
+    </div>
+    <!-- /app-shell -->
+
+    <!-- ═══════════════════════════════════════════════════════════
+     NEW APPOINTMENT MODAL
+     Triggered by the "New Appointment" button in the page header.
+══════════════════════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="newAppointmentModal">
+      <div class="modal">
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h3>📅 Book New Appointment</h3>
+          <button class="modal-close" aria-label="Close modal">✕</button>
+        </div>
+
+        <!-- Modal Body — Appointment Form -->
+        <div class="modal-body">
+          <form id="newAppointmentForm" novalidate>
+            <!-- Patient Name + Doctor (2-column row) -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="formPatient">Patient Name</label>
+                <input
+                  type="text"
+                  id="formPatient"
+                  class="form-control"
+                  placeholder="e.g. Ayaan Kapoor"
+                  required />
+              </div>
+              <div class="form-group">
+                <label for="formDoctor">Doctor</label>
+                <select id="formDoctor" class="form-control" required>
+                  <option value="">— Select Doctor —</option>
+                  <option>Dr. Suresh Mehta</option>
+                  <option>Dr. Ananya Iyer</option>
+                  <option>Dr. K. Reddy</option>
+                  <option>Dr. Harpreet Singh</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Department -->
+            <div class="form-group">
+              <label for="formDepartment">Department</label>
+              <select id="formDepartment" class="form-control" required>
+                <option value="">— Select Department —</option>
+                <option>Cardiology</option>
+                <option>Neurology</option>
+                <option>General</option>
+                <option>Pediatrics</option>
+                <option>Orthopedics</option>
+              </select>
+            </div>
+
+            <!-- Date + Time (2-column row) -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="formDate">Appointment Date</label>
+                <input
+                  type="date"
+                  id="formDate"
+                  class="form-control"
+                  required />
+              </div>
+              <div class="form-group">
+                <label for="formTime">Time Slot</label>
+                <input
+                  type="time"
+                  id="formTime"
+                  class="form-control"
+                  required />
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="form-group">
+              <label for="formNotes">Notes / Reason</label>
+              <textarea
+                id="formNotes"
+                class="form-control"
+                rows="3"
+                placeholder="Brief reason for visit…"
+                style="resize: vertical"></textarea>
+            </div>
+          </form>
+        </div>
+        <!-- /modal-body -->
+
+        <!-- Modal Footer -->
+        <div class="modal-footer">
+          <button
+            class="btn btn-ghost"
+            onclick="closeModal('newAppointmentModal')">
+            Cancel
+          </button>
+          <!-- Triggers the form's submit event -->
+          <button
+            class="btn btn-primary"
+            onclick="
+              document.getElementById('newAppointmentForm').requestSubmit()
+            ">
+            ✅ Book Appointment
+          </button>
+        </div>
+      </div>
+      <!-- /modal -->
+    </div>
+    <!-- /modal-overlay -->
+
+    <!-- ── Shared JavaScript ─────────────────────────────────── -->
+    <script src="js/app.js"></script>
+    <!-- Dashboard Login Script -->
+    <script>
+      /* -----------------------------------
+     CHECK LOGIN
+  ----------------------------------- */
+
+      const user = JSON.parse(localStorage.getItem("loggedInUser"));
+
+      if (!user) {
+        window.location.href = "login.html";
+      }
+
+      /* -----------------------------------
+     SHOW USER INFO
+  ----------------------------------- */
+
+      document.getElementById("loggedUserName").textContent = user.full_name;
+
+      document.getElementById("loggedUserRole").textContent = user.role;
+
+      /* -----------------------------------
+     LOGOUT
+  ----------------------------------- */
+
+      function logoutUser() {
+        localStorage.removeItem("loggedInUser");
+
+        window.location.href = "login.html";
+      }
+      /* -----------------------------------
+   FETCH DASHBOARD STATS
+----------------------------------- */
+
+      async function fetchDashboardStats() {
+        try {
+          const response = await fetch("http://localhost:5000/dashboard-stats");
+
+          const data = await response.json();
+
+          document.getElementById("stat-patients").textContent =
+            data.totalPatients;
+
+          document.getElementById("stat-doctors").textContent =
+            data.totalDoctors;
+
+          document.getElementById("stat-appointments").textContent =
+            data.totalAppointments;
+
+          document.getElementById("stat-bills").textContent =
+            `₹${data.totalRevenue}`;
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      fetchDashboardStats();
+    </script>
+  </body>
+</html>

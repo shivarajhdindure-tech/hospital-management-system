@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Settings — MedCare HMS</title>
+
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+
+  <body>
+    <div class="app-shell">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="brand-icon">🏥</div>
+
+          <div class="brand-text">
+            <h2>MedCare</h2>
+
+            <span>Hospital System</span>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <div class="nav-item" onclick="location.href = 'dashboard.html'">
+            📊 Dashboard
+          </div>
+
+          <div class="nav-item active">⚙️ Settings</div>
+        </nav>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <div class="main-content">
+        <header class="topbar">
+          <div class="topbar-title">Settings</div>
+        </header>
+
+        <main class="page-content">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2>Profile Settings</h2>
+
+                <p>Update your account information</p>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <form id="settingsForm">
+                <div class="form-group">
+                  <label>Full Name</label>
+
+                  <input
+                    type="text"
+                    id="fullName"
+                    class="form-control"
+                    required />
+                </div>
+
+                <div class="form-group">
+                  <label>Email</label>
+
+                  <input
+                    type="email"
+                    id="email"
+                    class="form-control"
+                    required />
+                </div>
+
+                <div class="form-group">
+                  <label>Password</label>
+
+                  <input
+                    type="password"
+                    id="password"
+                    class="form-control"
+                    required />
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                  Save Changes
+                </button>
+              </form>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const API_URL = "http://localhost:5000";
+
+      const user = JSON.parse(localStorage.getItem("loggedInUser"));
+
+      if (!user) {
+        window.location.href = "login.html";
+      }
+
+      /* LOAD USER DATA */
+
+      document.getElementById("fullName").value = user.full_name;
+
+      document.getElementById("email").value = user.email;
+
+      document.getElementById("password").value = user.password;
+
+      /* UPDATE PROFILE */
+
+      document
+        .getElementById("settingsForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const full_name = document.getElementById("fullName").value;
+
+          const email = document.getElementById("email").value;
+
+          const password = document.getElementById("password").value;
+
+          try {
+            const response = await fetch(
+              `${API_URL}/update-profile/${user.user_id}`,
+              {
+                method: "PUT",
+
+                headers: {
+                  "Content-Type": "application/json",
+                },
+
+                body: JSON.stringify({
+                  full_name,
+                  email,
+                  password,
+                }),
+              },
+            );
+
+            const result = await response.text();
+
+            alert(result);
+
+            /* UPDATE LOCAL STORAGE */
+
+            user.full_name = full_name;
+            user.email = email;
+            user.password = password;
+
+            localStorage.setItem("loggedInUser", JSON.stringify(user));
+          } catch (error) {
+            console.log(error);
+          }
+        });
+    </script>
+  </body>
+</html>

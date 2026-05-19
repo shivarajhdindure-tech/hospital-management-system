@@ -1,0 +1,1195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Appointments — MediCore HMS</title>
+
+    <!-- Google Fonts: same as the rest of the project -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+      rel="stylesheet" />
+
+    <!-- Link to the shared stylesheet (same folder structure as project) -->
+    <link rel="stylesheet" href="css/style.css" />
+
+    <style>
+      /* ============================================================
+         appointments.html — Page-specific styles only.
+         All base styles (sidebar, navbar, buttons, badges, modals,
+         tables, forms, animations) come from css/style.css.
+         We only add what is unique to this page here.
+         ============================================================ */
+
+      /* ── Collapsible Form Panel ──────────────────────────────── */
+
+      /* The form card sits above the table card */
+      .form-card {
+        background: var(--white);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 24px;
+        /* Entry animation (same as .card in style.css) */
+        opacity: 0;
+        animation: fadeSlideUp 0.5s ease 0.1s forwards;
+      }
+
+      /* Header row of the form card — holds title + toggle button */
+      .form-card-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        cursor: pointer; /* clicking the header also toggles form */
+        user-select: none;
+      }
+
+      .form-card-header h2 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--dark-blue);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* The little arrow icon that rotates when form collapses */
+      .toggle-arrow {
+        display: inline-block;
+        font-style: normal;
+        transition: transform 0.3s ease;
+        color: var(--text-light);
+        font-size: 13px;
+      }
+
+      /* When the form is collapsed, rotate arrow to point right */
+      .form-card.collapsed .toggle-arrow {
+        transform: rotate(-90deg);
+      }
+
+      /* The collapsible body — animated open/close */
+      .form-collapsible {
+        overflow: hidden;
+        max-height: 600px; /* large enough to never clip content */
+        transition:
+          max-height 0.4s ease,
+          opacity 0.3s ease;
+        opacity: 1;
+      }
+
+      /* Hidden state: collapse to zero height */
+      .form-collapsible.hidden {
+        max-height: 0;
+        opacity: 0;
+      }
+
+      .form-card-body {
+        padding: 24px;
+      }
+
+      /* Three-column row for the first set of fields */
+      .form-row-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 16px;
+      }
+
+      /* Two-column row for the second set */
+      .form-row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      /* Read-only field styling (Appointment ID is auto-generated) */
+      .form-control[readonly] {
+        background: var(--pale-blue);
+        color: var(--text-mid);
+        cursor: not-allowed;
+      }
+
+      /* Inline feedback message below the form */
+      .form-feedback {
+        display: none; /* shown via JS */
+        margin-top: 14px;
+        padding: 10px 14px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      /* ── Table Section ───────────────────────────────────────── */
+
+      /* Card wrapping the appointments table */
+      .table-card {
+        background: var(--white);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        /* Slightly later entry animation */
+        opacity: 0;
+        animation: fadeSlideUp 0.5s ease 0.25s forwards;
+      }
+
+      /* Table card header: title on left, search + filter on right */
+      .table-card-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .table-card-header h2 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--dark-blue);
+      }
+
+      .table-card-header p {
+        font-size: 12px;
+        color: var(--text-light);
+        margin-top: 2px;
+      }
+
+      /* Right side controls: search input + status filter */
+      .table-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      /* Search input inside the table header */
+      .table-search {
+        position: relative;
+      }
+
+      .table-search input {
+        padding: 8px 14px 8px 36px;
+        border: 1.5px solid var(--border);
+        border-radius: 30px;
+        font-family: var(--font-body);
+        font-size: 13px;
+        color: var(--text-dark);
+        background: var(--pale-blue);
+        outline: none;
+        width: 220px;
+        transition: var(--transition);
+      }
+
+      .table-search input:focus {
+        border-color: var(--accent-blue);
+        background: var(--white);
+        box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+      }
+
+      .table-search .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-light);
+        font-size: 14px;
+        pointer-events: none;
+      }
+
+      /* Status filter dropdown */
+      .filter-select {
+        padding: 8px 32px 8px 12px;
+        border: 1.5px solid var(--border);
+        border-radius: 30px;
+        font-family: var(--font-body);
+        font-size: 13px;
+        color: var(--text-mid);
+        background: var(--pale-blue);
+        outline: none;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%238fa8c0' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        transition: var(--transition);
+      }
+
+      .filter-select:focus {
+        border-color: var(--accent-blue);
+        box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+      }
+
+      /* ── Doctor cell in the table (icon + name) ──────────────── */
+      .doctor-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .doctor-cell .doc-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--mid-blue), #00bcd4);
+        color: var(--white);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+
+      /* ── Date/Time cell ──────────────────────────────────────── */
+      .datetime-cell {
+        line-height: 1.4;
+      }
+
+      .datetime-cell .date {
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--text-dark);
+      }
+
+      .datetime-cell .time {
+        font-size: 11px;
+        color: var(--text-light);
+      }
+
+      /* ── Empty state (shown when no rows match search/filter) ─── */
+      .empty-state {
+        text-align: center;
+        padding: 48px 24px;
+        color: var(--text-light);
+      }
+
+      .empty-state .empty-icon {
+        font-size: 40px;
+        margin-bottom: 12px;
+        opacity: 0.5;
+      }
+
+      .empty-state p {
+        font-size: 14px;
+      }
+
+      /* ── Delete Confirmation Dialog ──────────────────────────── */
+      /* Reuses .modal-overlay / .modal from style.css;
+         only needs the confirm text block styled */
+      #deleteConfirmText {
+        font-size: 14px;
+        color: var(--text-mid);
+        line-height: 1.6;
+        text-align: center;
+        padding: 8px 0 4px;
+      }
+
+      /* ── Responsive tweaks specific to this page ─────────────── */
+      @media (max-width: 900px) {
+        .form-row-3 {
+          grid-template-columns: 1fr 1fr; /* 3 cols → 2 cols on tablet */
+        }
+      }
+
+      @media (max-width: 600px) {
+        .form-row-3,
+        .form-row-2 {
+          grid-template-columns: 1fr; /* stack all fields on mobile */
+        }
+
+        .table-controls {
+          width: 100%;
+        }
+
+        .table-search input {
+          width: 100%; /* full-width search on mobile */
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ══════════════════════════════════════════════════════════
+         APP SHELL — wraps sidebar + main content side by side
+    ══════════════════════════════════════════════════════════ -->
+    <div class="app-shell">
+      <!-- ── SIDEBAR ─────────────────────────────────────────── -->
+      <aside class="sidebar" id="sidebar">
+        <!-- Brand / Logo -->
+        <div class="sidebar-brand">
+          <div class="brand-icon">🏥</div>
+          <div class="brand-text">
+            <h2>MediCore</h2>
+            <span>HMS Portal</span>
+          </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+          <!-- MAIN section label -->
+          <p class="nav-section-label">Main</p>
+
+          <!-- Dashboard link -->
+          <a href="dashboard.html" class="nav-item">
+            <span class="nav-icon">📊</span>
+            Dashboard
+          </a>
+
+          <!-- PATIENT CARE section label -->
+          <p class="nav-section-label">Patient Care</p>
+
+          <!-- Patients link -->
+          <a href="patients.html" class="nav-item">
+            <span class="nav-icon">🧑‍⚕️</span>
+            Patients
+          </a>
+
+          <!-- Doctors link -->
+          <a href="doctors.html" class="nav-item">
+            <span class="nav-icon">👨‍⚕️</span>
+            Doctors
+          </a>
+
+          <!-- Appointments link — ACTIVE on this page -->
+          <a href="appointments.html" class="nav-item active">
+            <span class="nav-icon">📅</span>
+            Appointments
+            <!-- Badge shows pending count -->
+            <span class="nav-badge">5</span>
+          </a>
+
+          <!-- ADMINISTRATION section -->
+          <p class="nav-section-label">Administration</p>
+
+          <!-- Billing link -->
+          <a href="billing.html" class="nav-item">
+            <span class="nav-icon">💳</span>
+            Billing
+          </a>
+
+          <!-- Reports link (placeholder) -->
+          <a href="#" class="nav-item">
+            <span class="nav-icon">📈</span>
+            Reports
+          </a>
+
+          <!-- Settings link (placeholder) -->
+          <a href="#" class="nav-item">
+            <span class="nav-icon">⚙️</span>
+            Settings
+          </a>
+        </nav>
+
+        <!-- Sidebar Footer: logged-in user info -->
+        <div class="sidebar-footer">
+          <div class="sidebar-user">
+            <div class="user-avatar">👤</div>
+            <div class="user-info">
+              <h4>Dr. Admin</h4>
+              <p>Administrator</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+      <!-- END sidebar -->
+
+      <!-- Mobile overlay: tapping it closes the sidebar -->
+      <div
+        class="sidebar-overlay"
+        id="sidebarOverlay"
+        onclick="closeSidebar()"></div>
+
+      <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
+      <div class="main-content">
+        <!-- ── TOP NAVBAR ──────────────────────────────────────── -->
+        <header class="topbar">
+          <!-- Hamburger button (visible only on mobile) -->
+          <button
+            class="topbar-toggle"
+            id="sidebarToggle"
+            onclick="openSidebar()"
+            aria-label="Open menu">
+            ☰
+          </button>
+
+          <!-- Page title -->
+          <span class="topbar-title">Appointments</span>
+
+          <!-- Search bar (hidden on small screens via CSS) -->
+          <div class="topbar-search">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Search anything…" />
+          </div>
+
+          <!-- Right side: notification bell + user avatar -->
+          <div class="topbar-actions">
+            <!-- Bell icon with red dot -->
+            <button class="topbar-btn" aria-label="Notifications">
+              🔔
+              <span class="dot"></span>
+            </button>
+
+            <!-- Calendar quick-access -->
+            <button class="topbar-btn" aria-label="Calendar">📆</button>
+
+            <!-- User avatar -->
+            <div class="topbar-avatar" title="Logged in as Dr. Admin">👤</div>
+          </div>
+        </header>
+        <!-- END topbar -->
+
+        <!-- ── PAGE CONTENT ─────────────────────────────────────── -->
+        <main class="page-content">
+          <!-- Page Header: title + "Book Appointment" button -->
+          <div class="page-header">
+            <div>
+              <h1>Appointment Management</h1>
+              <p>Schedule, track and manage all patient appointments</p>
+            </div>
+            <!-- Clicking this opens the booking form if it was collapsed -->
+            <button class="btn btn-primary" onclick="openFormPanel()">
+              ➕ Book Appointment
+            </button>
+          </div>
+
+          <!-- ── STAT CARDS ROW ──────────────────────────────────── -->
+          <!-- Four summary cards at the top of the page -->
+          <div class="stats-grid">
+            <!-- Total Appointments -->
+            <div class="stat-card blue">
+              <div class="stat-icon">📅</div>
+              <div class="stat-info">
+                <h3>128</h3>
+                <p>Total Appointments</p>
+                <span class="stat-change up">↑ 8 this week</span>
+              </div>
+            </div>
+
+            <!-- Pending -->
+            <div class="stat-card orange">
+              <div class="stat-icon">⏳</div>
+              <div class="stat-info">
+                <h3>37</h3>
+                <p>Pending</p>
+                <span class="stat-change up">↑ 3 today</span>
+              </div>
+            </div>
+
+            <!-- Completed -->
+            <div class="stat-card green">
+              <div class="stat-icon">✅</div>
+              <div class="stat-info">
+                <h3>84</h3>
+                <p>Completed</p>
+                <span class="stat-change up">↑ 12 this week</span>
+              </div>
+            </div>
+
+            <!-- Cancelled -->
+            <div
+              class="stat-card"
+              style="--card-accent: var(--danger); --card-bg: #fdecea">
+              <div class="stat-icon">❌</div>
+              <div class="stat-info">
+                <h3>7</h3>
+                <p>Cancelled</p>
+                <span class="stat-change down">↓ 2 this week</span>
+              </div>
+            </div>
+          </div>
+          <!-- END stat cards -->
+
+          <!-- ══════════════════════════════════════════════════════
+               BOOKING FORM CARD
+               Collapsible — user can show/hide it via the header
+          ══════════════════════════════════════════════════════ -->
+          <div class="form-card" id="formCard">
+            <!-- Clicking the header toggles open/close -->
+            <div class="form-card-header" onclick="toggleFormCard()">
+              <h2>
+                📋 Book New Appointment
+                <!-- Rotating arrow indicates open/collapsed state -->
+                <i class="toggle-arrow" id="toggleArrow">▼</i>
+              </h2>
+              <span style="font-size: 12px; color: var(--text-light)"
+                >Click to collapse</span
+              >
+            </div>
+
+            <!-- Collapsible body -->
+            <div class="form-collapsible" id="formCollapsible">
+              <div class="form-card-body">
+                <!-- BOOKING FORM — all fields inline-commented -->
+                <form id="appointmentForm" novalidate>
+                  <!-- ROW 1: Appointment ID | Patient Name | Doctor Name -->
+                  <div class="form-row-3">
+                    <!-- Appointment ID — auto-generated, read-only -->
+                    <div class="form-group">
+                      <label for="fApptId">Appointment ID</label>
+                      <input
+                        type="text"
+                        id="fApptId"
+                        class="form-control"
+                        readonly
+                        title="Auto-generated — cannot be edited" />
+                    </div>
+
+                    <!-- Patient Name — free text input -->
+                    <div class="form-group">
+                      <label for="fPatientName"
+                        >Patient Name
+                        <span style="color: var(--danger)">*</span></label
+                      >
+                      <input
+                        type="number"
+                        id="fPatientId"
+                        class="form-control"
+                        placeholder="Enter Patient ID" />
+                    </div>
+
+                    <!-- Doctor Name — dropdown list -->
+                    <div class="form-group">
+                      <label for="fDoctorName"
+                        >Doctor Name
+                        <span style="color: var(--danger)">*</span></label
+                      >
+                      <select id="fDoctorId" class="form-control">
+                        <option value="">— Select Doctor —</option>
+
+                        <option value="1">Doctor ID 1</option>
+
+                        <option value="2">Doctor ID 2</option>
+
+                        <option value="3">Doctor ID 3</option>
+                      </select>
+                    </div>
+                  </div>
+                  <!-- END ROW 1 -->
+
+                  <!-- ROW 2: Appointment Date | Appointment Time | Status -->
+                  <div class="form-row-3">
+                    <!-- Appointment Date -->
+                    <div class="form-group">
+                      <label for="fDate"
+                        >Appointment Date
+                        <span style="color: var(--danger)">*</span></label
+                      >
+                      <input type="date" id="fDate" class="form-control" />
+                    </div>
+
+                    <!-- Appointment Time -->
+                    <div class="form-group">
+                      <label for="fTime"
+                        >Appointment Time
+                        <span style="color: var(--danger)">*</span></label
+                      >
+                      <input type="time" id="fTime" class="form-control" />
+                    </div>
+
+                    <!-- Status dropdown -->
+                    <div class="form-group">
+                      <label for="fStatus"
+                        >Status
+                        <span style="color: var(--danger)">*</span></label
+                      >
+                      <select id="fStatus" class="form-control">
+                        <option value="">— Select Status —</option>
+                        <option value="pending">⏳ Pending</option>
+                        <option value="completed">✅ Completed</option>
+                        <option value="cancelled">❌ Cancelled</option>
+                      </select>
+                    </div>
+                  </div>
+                  <!-- END ROW 2 -->
+
+                  <!-- Inline feedback message (success / error) -->
+                  <div class="form-feedback" id="formFeedback"></div>
+
+                  <!-- Form action buttons -->
+                  <div class="flex gap-8" style="margin-top: 4px">
+                    <!-- Submit: adds appointment to table -->
+                    <button type="submit" class="btn btn-primary">
+                      ✅ Book Appointment
+                    </button>
+                    <!-- Reset: clears all fields -->
+                    <button
+                      type="button"
+                      class="btn btn-ghost"
+                      onclick="resetForm()">
+                      🔄 Reset
+                    </button>
+                  </div>
+                </form>
+                <!-- END form -->
+              </div>
+            </div>
+            <!-- END collapsible body -->
+          </div>
+          <!-- END form card -->
+
+          <!-- ══════════════════════════════════════════════════════
+               APPOINTMENTS TABLE CARD
+          ══════════════════════════════════════════════════════ -->
+          <div class="table-card">
+            <!-- Table header: title + search + filter -->
+            <div class="table-card-header">
+              <div>
+                <h2>All Appointments</h2>
+                <p id="rowCountLabel">Showing all records</p>
+              </div>
+
+              <!-- Search input + status filter -->
+              <div class="table-controls">
+                <!-- Live search: filters rows as user types -->
+                <div class="table-search">
+                  <span class="search-icon">🔍</span>
+                  <input
+                    type="text"
+                    id="tableSearch"
+                    placeholder="Search appointments…"
+                    oninput="filterTable()" />
+                </div>
+
+                <!-- Status filter dropdown -->
+                <select
+                  class="filter-select"
+                  id="statusFilter"
+                  onchange="filterTable()">
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            </div>
+            <!-- END table header -->
+
+            <!-- Scrollable wrapper so table doesn't break on narrow screens -->
+            <div class="table-wrapper">
+              <table id="appointmentsTable">
+                <!-- Table head: column labels -->
+                <thead>
+                  <tr>
+                    <th>Appt. ID</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date &amp; Time</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+
+                <!-- Table body: rows injected by JavaScript -->
+                <tbody id="tableBody">
+                  <!-- Rows are rendered by renderTable() on page load
+                       and re-rendered whenever a new appointment is booked,
+                       searched, or filtered. -->
+                </tbody>
+              </table>
+
+              <!-- Empty state: shown when no rows match the search/filter -->
+              <div class="empty-state" id="emptyState" style="display: none">
+                <div class="empty-icon">📭</div>
+                <p>No appointments found matching your search.</p>
+              </div>
+            </div>
+            <!-- END table wrapper -->
+          </div>
+          <!-- END table card -->
+        </main>
+        <!-- END page content -->
+      </div>
+      <!-- END main content -->
+    </div>
+    <!-- END app-shell -->
+
+    <!-- ══════════════════════════════════════════════════════════
+         EDIT APPOINTMENT MODAL
+         Pops up when user clicks the ✏️ Edit button on a row.
+    ══════════════════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="editModal">
+      <div class="modal">
+        <!-- Modal header -->
+        <div class="modal-header">
+          <h3>✏️ Edit Appointment</h3>
+          <button
+            class="modal-close"
+            onclick="closeModal('editModal')"
+            aria-label="Close">
+            ✕
+          </button>
+        </div>
+
+        <!-- Modal body: edit form -->
+        <div class="modal-body">
+          <form id="editForm" novalidate>
+            <!-- Hidden field: stores the row index being edited -->
+            <input type="hidden" id="eIndex" />
+
+            <!-- Row: Patient Name + Doctor Name -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ePatientName">Patient Name</label>
+                <input type="text" id="ePatientName" class="form-control" />
+              </div>
+
+              <div class="form-group">
+                <label for="eDoctorName">Doctor Name</label>
+                <select id="eDoctorName" class="form-control">
+                  <option value="Dr. Suresh Mehta">
+                    Dr. Suresh Mehta — Cardiology
+                  </option>
+                  <option value="Dr. Ananya Iyer">
+                    Dr. Ananya Iyer — Pediatrics
+                  </option>
+                  <option value="Dr. K. Reddy">Dr. K. Reddy — Neurology</option>
+                  <option value="Dr. Harpreet Singh">
+                    Dr. Harpreet Singh — Orthopedics
+                  </option>
+                  <option value="Dr. Meena Joshi">
+                    Dr. Meena Joshi — General Medicine
+                  </option>
+                  <option value="Dr. Rajan Pillai">
+                    Dr. Rajan Pillai — Dermatology
+                  </option>
+                  <option value="Dr. Sunita Das">
+                    Dr. Sunita Das — Gynecology
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Row: Date + Time -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="eDate">Appointment Date</label>
+                <input type="date" id="eDate" class="form-control" />
+              </div>
+
+              <div class="form-group">
+                <label for="eTime">Appointment Time</label>
+                <input type="time" id="eTime" class="form-control" />
+              </div>
+            </div>
+
+            <!-- Status -->
+            <div class="form-group">
+              <label for="eStatus">Status</label>
+              <select id="eStatus" class="form-control">
+                <option value="pending">⏳ Pending</option>
+                <option value="completed">✅ Completed</option>
+                <option value="cancelled">❌ Cancelled</option>
+              </select>
+            </div>
+          </form>
+        </div>
+
+        <!-- Modal footer: Save + Cancel buttons -->
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal('editModal')">
+            Cancel
+          </button>
+          <button class="btn btn-primary" onclick="saveEdit()">
+            💾 Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- END edit modal -->
+
+    <!-- ══════════════════════════════════════════════════════════
+         DELETE CONFIRMATION DIALOG
+         Appears before permanently deleting a row.
+    ══════════════════════════════════════════════════════════ -->
+    <div
+      class="modal-overlay"
+      id="deleteConfirm"
+      onclick="handleDeleteOverlayClick(event)">
+      <div class="modal" style="max-width: 420px">
+        <div class="modal-header">
+          <h3>🗑️ Delete Appointment</h3>
+          <button
+            class="modal-close"
+            onclick="closeModal('deleteConfirm')"
+            aria-label="Close">
+            ✕
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Dynamic text filled by JS: shows patient name -->
+          <p id="deleteConfirmText"></p>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal('deleteConfirm')">
+            Cancel
+          </button>
+          <button class="btn btn-danger" id="confirmDeleteBtn">
+            🗑️ Yes, Delete
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- END delete confirm dialog -->
+
+    <!-- ══════════════════════════════════════════════════════════
+         JAVASCRIPT
+         All logic for this page. Well-commented for beginners.
+    ══════════════════════════════════════════════════════════ -->
+    <script>
+      const API_URL = "http://localhost:5000";
+
+      /* Stores the index of the row pending deletion (set by confirmDelete) */
+      let pendingDeleteIndex = null;
+
+      /* ──────────────────────────────────────────────────────────
+         2. HELPER FUNCTIONS
+      ────────────────────────────────────────────────────────── */
+
+      /**
+       * getInitials(name)
+       * Returns the first letter of each word in a name, up to 2 letters.
+       * Example: "Ayaan Kapoor" → "AK"
+       */
+      function getInitials(name) {
+        return name
+          .split(" ")
+          .map((word) => word[0])
+          .join("")
+          .toUpperCase()
+          .slice(0, 2);
+      }
+
+      /**
+       * formatDate(dateStr)
+       * Converts "2026-05-12" (YYYY-MM-DD) to "12 May 2026" for display.
+       */
+      function formatDate(dateStr) {
+        if (!dateStr) return "—";
+        const [year, month, day] = dateStr.split("-");
+        const months = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
+        return `${parseInt(day)} ${months[parseInt(month) - 1]} ${year}`;
+      }
+
+      /**
+       * formatTime(timeStr)
+       * Converts "09:00" (24-hr) to "09:00 AM" / "02:00 PM".
+       */
+      function formatTime(timeStr) {
+        if (!timeStr) return "—";
+        const [hStr, mStr] = timeStr.split(":");
+        let h = parseInt(hStr);
+        const m = mStr;
+        const ampm = h >= 12 ? "PM" : "AM";
+        h = h % 12 || 12; // convert 0 → 12 for midnight
+        return `${String(h).padStart(2, "0")}:${m} ${ampm}`;
+      }
+
+      /**
+       * buildBadge(status)
+       * Returns the HTML for a coloured status badge pill.
+       * Status values: "pending" | "completed" | "cancelled"
+       */
+      function buildBadge(status) {
+        /* Map status value → display label + CSS class */
+        const map = {
+          pending: { label: "Pending", cls: "pending" },
+          completed: { label: "Completed", cls: "completed" },
+          cancelled: { label: "Cancelled", cls: "cancelled" },
+        };
+        const s = map[status] || { label: status, cls: "pending" };
+        return `<span class="badge ${s.cls}">${s.label}</span>`;
+      }
+
+      /* ──────────────────────────────────────────────────────────
+         3. RENDER TABLE
+         Draws all appointment rows into <tbody id="tableBody">.
+         Filters by search text AND selected status if provided.
+      ────────────────────────────────────────────────────────── */
+      async function renderTable() {
+        try {
+          const response = await fetch(`${API_URL}/appointments`);
+
+          const appointments = await response.json();
+
+          const tbody = document.getElementById("tableBody");
+
+          tbody.innerHTML = "";
+
+          appointments.forEach((appt) => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+
+        <td>${appt.appointment_id}</td>
+
+        <td>${appt.patient_name}</td>
+
+        <td>${appt.doctor_name}</td>
+
+        <td>
+          ${appt.appointment_date}
+          <br>
+          ${appt.appointment_time}
+        </td>
+
+        <td>${appt.status}</td>
+
+        <td>
+
+          <button
+            class="btn btn-icon btn-danger"
+            onclick="deleteAppointment(${appt.appointment_id})">
+            🗑️
+          </button>
+
+        </td>
+      `;
+
+            tbody.appendChild(row);
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
+      async function deleteAppointment(id) {
+        const confirmDelete = confirm("Delete appointment?");
+
+        if (!confirmDelete) return;
+
+        try {
+          const response = await fetch(`${API_URL}/delete-appointment/${id}`, {
+            method: "DELETE",
+          });
+
+          const result = await response.text();
+
+          alert(result);
+
+          renderTable();
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
+      /* ──────────────────────────────────────────────────────────
+         4. FORM: TOGGLE OPEN / COLLAPSE
+      ────────────────────────────────────────────────────────── */
+
+      /**
+       * toggleFormCard()
+       * Called when the form card header is clicked.
+       * Toggles the .collapsed class on #formCard and
+       * the .hidden class on the collapsible body.
+       */
+      function toggleFormCard() {
+        const card = document.getElementById("formCard");
+        const body = document.getElementById("formCollapsible");
+        const arrow = document.getElementById("toggleArrow");
+        const headerHint = card.querySelector(".form-card-header span");
+
+        if (body.classList.contains("hidden")) {
+          /* ── EXPAND ── */
+          body.classList.remove("hidden");
+          card.classList.remove("collapsed");
+          headerHint.textContent = "Click to collapse";
+        } else {
+          /* ── COLLAPSE ── */
+          body.classList.add("hidden");
+          card.classList.add("collapsed");
+          headerHint.textContent = "Click to expand";
+        }
+      }
+
+      /**
+       * openFormPanel()
+       * Called by the "Book Appointment" button in the page header.
+       * Ensures the form is visible and scrolls to it.
+       */
+      function openFormPanel() {
+        const body = document.getElementById("formCollapsible");
+        const card = document.getElementById("formCard");
+        const headerHint = card.querySelector(".form-card-header span");
+
+        /* Make sure the form is expanded */
+        body.classList.remove("hidden");
+        card.classList.remove("collapsed");
+        headerHint.textContent = "Click to collapse";
+
+        /* Scroll smoothly to the form */
+        card.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      /* ──────────────────────────────────────────────────────────
+         6. FORM FEEDBACK (success / error messages below the form)
+      ────────────────────────────────────────────────────────── */
+
+      function showFeedback(msg, type) {
+        const el = document.getElementById("formFeedback");
+        el.textContent = msg;
+        el.style.display = "block";
+        if (type === "success") {
+          el.style.background = "#e8f8f0";
+          el.style.color = "var(--success)";
+          el.style.border = "1.5px solid #b7e5cc";
+        } else {
+          el.style.background = "#fdecea";
+          el.style.color = "var(--danger)";
+          el.style.border = "1.5px solid #f5c6c2";
+        }
+      }
+
+      function hideFeedback() {
+        document.getElementById("formFeedback").style.display = "none";
+      }
+
+      /* ──────────────────────────────────────────────────────────
+         7. RESET FORM
+         Clears all inputs and restores the auto-generated ID.
+      ────────────────────────────────────────────────────────── */
+      function resetForm() {
+        document.getElementById("appointmentForm").reset();
+
+        hideFeedback();
+      }
+
+      /* ──────────────────────────────────────────────────────────
+         8. SUBMIT NEW APPOINTMENT
+         Validates fields, pushes to array, re-renders table.
+      ────────────────────────────────────────────────────────── */
+      document
+        .getElementById("appointmentForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const patient_id = document.getElementById("fPatientId").value;
+
+          const doctor_id = document.getElementById("fDoctorId").value;
+
+          const appointment_date = document.getElementById("fDate").value;
+
+          const appointment_time = document.getElementById("fTime").value;
+
+          const status = document.getElementById("fStatus").value;
+
+          const appointmentData = {
+            patient_id,
+            doctor_id,
+            appointment_date,
+            appointment_time,
+            status,
+          };
+
+          try {
+            const response = await fetch(`${API_URL}/add-appointment`, {
+              method: "POST",
+
+              headers: {
+                "Content-Type": "application/json",
+              },
+
+              body: JSON.stringify(appointmentData),
+            });
+
+            const result = await response.text();
+
+            alert(result);
+
+            document.getElementById("appointmentForm").reset();
+
+            renderTable();
+          } catch (error) {
+            console.log(error);
+          }
+        });
+
+      /** Actually deletes the appointment when "Yes, Delete" is clicked */
+      document
+        .getElementById("confirmDeleteBtn")
+        .addEventListener("click", () => {
+          if (pendingDeleteIndex === null) return;
+
+          appointments.splice(pendingDeleteIndex, 1); /* Remove from array */
+          pendingDeleteIndex = null;
+
+          closeModal("deleteConfirm");
+          renderTable(); /* Redraw table without the deleted row */
+        });
+
+      /**
+       * handleDeleteOverlayClick(event)
+       * Closes the delete dialog when the user clicks the dark overlay
+       * (outside the modal box).
+       */
+      function handleDeleteOverlayClick(event) {
+        if (event.target === document.getElementById("deleteConfirm")) {
+          closeModal("deleteConfirm");
+          pendingDeleteIndex = null;
+        }
+      }
+
+      /* ──────────────────────────────────────────────────────────
+         13. MODAL HELPERS (open / close)
+         Re-used for both the Edit modal and the Delete dialog.
+      ────────────────────────────────────────────────────────── */
+      function openModal(id) {
+        document.getElementById(id).classList.add("active");
+      }
+
+      function closeModal(id) {
+        document.getElementById(id).classList.remove("active");
+      }
+
+      /* Close any open modal when user presses Escape key */
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeModal("editModal");
+          closeModal("deleteConfirm");
+          pendingDeleteIndex = null;
+        }
+      });
+
+      /* ──────────────────────────────────────────────────────────
+         14. SIDEBAR TOGGLE (mobile)
+         The hamburger button (☰) calls openSidebar().
+         The overlay calls closeSidebar().
+      ────────────────────────────────────────────────────────── */
+      function openSidebar() {
+        document.getElementById("sidebar").classList.add("open");
+        document.getElementById("sidebarOverlay").classList.add("active");
+      }
+
+      function closeSidebar() {
+        document.getElementById("sidebar").classList.remove("open");
+        document.getElementById("sidebarOverlay").classList.remove("active");
+      }
+
+      /* ──────────────────────────────────────────────────────────
+         15. INITIALISE PAGE
+         Runs once when the entire HTML document has loaded.
+      ────────────────────────────────────────────────────────── */
+      document.addEventListener("DOMContentLoaded", () => {
+        renderTable();
+      });
+    </script>
+  </body>
+</html>

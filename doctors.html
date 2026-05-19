@@ -1,0 +1,1210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Doctors — MedCare HMS</title>
+
+    <!-- Shared stylesheet -->
+    <link rel="stylesheet" href="css/style.css" />
+
+    <!-- ─────────────────────────────────────────────────────────
+       DOCTORS PAGE — page-specific styles only
+  ────────────────────────────────────────────────────────── -->
+    <style>
+      /* ── Page entry animations ──────────────────────────── */
+      .anim-1 {
+        opacity: 0;
+        animation: fadeSlideUp 0.5s ease 0.08s forwards;
+      }
+      .anim-2 {
+        opacity: 0;
+        animation: fadeSlideUp 0.5s ease 0.22s forwards;
+      }
+      .anim-3 {
+        opacity: 0;
+        animation: fadeSlideUp 0.5s ease 0.36s forwards;
+      }
+
+      /* ── Summary stat mini-cards below page header ───────── */
+      .doctor-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .doc-stat {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+        opacity: 0;
+        animation: fadeSlideUp 0.5s ease forwards;
+      }
+
+      .doc-stat:nth-child(1) {
+        animation-delay: 0.05s;
+      }
+      .doc-stat:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .doc-stat:nth-child(3) {
+        animation-delay: 0.25s;
+      }
+      .doc-stat:nth-child(4) {
+        animation-delay: 0.35s;
+      }
+
+      .doc-stat:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+      }
+
+      .doc-stat-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+      }
+
+      .doc-stat-info .num {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--dark-blue);
+        line-height: 1;
+      }
+      .doc-stat-info .lbl {
+        font-size: 12px;
+        color: var(--text-light);
+        margin-top: 3px;
+      }
+
+      @media (max-width: 900px) {
+        .doctor-stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (max-width: 480px) {
+        .doctor-stats {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ── Registration form card ──────────────────────────── */
+      .form-card {
+        background: var(--white);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 24px;
+        overflow: hidden;
+      }
+
+      .form-card-bar {
+        height: 4px;
+        /* teal gradient to differentiate from patients page */
+        background: linear-gradient(90deg, #00bcd4, var(--mid-blue));
+      }
+
+      .form-card-inner {
+        padding: 22px 28px 28px;
+      }
+
+      /* Collapse / expand toggle */
+      .form-toggle-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--accent-blue);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        transition: var(--transition);
+      }
+      .form-toggle-btn:hover {
+        color: var(--dark-blue);
+      }
+      .form-toggle-btn .arrow {
+        display: inline-block;
+        transition: transform 0.25s ease;
+        font-style: normal;
+      }
+      .form-toggle-btn.collapsed .arrow {
+        transform: rotate(-90deg);
+      }
+
+      /* Animated collapse wrapper */
+      .form-collapsible {
+        overflow: hidden;
+        max-height: 600px;
+        transition:
+          max-height 0.4s ease,
+          opacity 0.3s ease,
+          margin 0.3s ease;
+        opacity: 1;
+        margin-top: 20px;
+      }
+      .form-collapsible.hidden {
+        max-height: 0;
+        opacity: 0;
+        margin-top: 0;
+      }
+
+      /* 3-column grid for fields */
+      .form-grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      @media (max-width: 900px) {
+        .form-grid-3 {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (max-width: 540px) {
+        .form-grid-3 {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+      }
+
+      /* Inline feedback */
+      #formFeedback {
+        display: none;
+        margin-top: 14px;
+        padding: 10px 14px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      /* ── Table card ──────────────────────────────────────── */
+      .table-card {
+        background: var(--white);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+      }
+
+      .table-toolbar {
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .table-toolbar h2 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--dark-blue);
+        margin-right: auto;
+      }
+
+      .count-pill {
+        background: var(--light-blue);
+        color: var(--accent-blue);
+        font-size: 12px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+      }
+
+      .toolbar-search {
+        position: relative;
+        width: 240px;
+      }
+      .toolbar-search input {
+        width: 100%;
+        padding: 8px 14px 8px 36px;
+        border: 1.5px solid var(--border);
+        border-radius: 30px;
+        font-family: var(--font-body);
+        font-size: 13px;
+        color: var(--text-dark);
+        background: var(--pale-blue);
+        outline: none;
+        transition: var(--transition);
+      }
+      .toolbar-search input:focus {
+        border-color: var(--accent-blue);
+        background: var(--white);
+        box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+      }
+      .toolbar-search .s-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 13px;
+        color: var(--text-light);
+        pointer-events: none;
+      }
+
+      @media (max-width: 768px) {
+        .toolbar-search {
+          width: 100%;
+          order: 3;
+        }
+        .hide-mobile {
+          display: none;
+        }
+      }
+
+      /* ── Doctor avatar in table ──────────────────────────── */
+      .doc-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--white);
+        flex-shrink: 0;
+      }
+
+      /* Rotating hue per avatar so each doctor looks distinct */
+      .doc-avatar.c0 {
+        background: linear-gradient(135deg, #0d3b66, #1a73e8);
+      }
+      .doc-avatar.c1 {
+        background: linear-gradient(135deg, #00796b, #26c6da);
+      }
+      .doc-avatar.c2 {
+        background: linear-gradient(135deg, #6a1b9a, #ab47bc);
+      }
+      .doc-avatar.c3 {
+        background: linear-gradient(135deg, #c62828, #ef5350);
+      }
+      .doc-avatar.c4 {
+        background: linear-gradient(135deg, #e65100, #ffa726);
+      }
+      .doc-avatar.c5 {
+        background: linear-gradient(135deg, #1565c0, #42a5f5);
+      }
+      .doc-avatar.c6 {
+        background: linear-gradient(135deg, #2e7d32, #66bb6a);
+      }
+
+      /* ── Specialization badge ────────────────────────────── */
+      .spec-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        background: var(--light-blue);
+        color: var(--dark-blue);
+        border: 1px solid var(--border);
+      }
+
+      /* ── Availability dot ────────────────────────────────── */
+      .avail-dot {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .avail-dot::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+      .avail-dot.available {
+        color: var(--success);
+      }
+      .avail-dot.available::before {
+        background: var(--success);
+      }
+      .avail-dot.busy {
+        color: var(--warning);
+      }
+      .avail-dot.busy::before {
+        background: var(--warning);
+      }
+      .avail-dot.off {
+        color: var(--text-light);
+      }
+      .avail-dot.off::before {
+        background: var(--text-light);
+      }
+
+      /* ── Empty state ─────────────────────────────────────── */
+      .empty-row td {
+        text-align: center;
+        padding: 40px 16px;
+        color: var(--text-light);
+        font-size: 14px;
+      }
+
+      /* ── Delete confirmation overlay ─────────────────────── */
+      .del-confirm {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(9, 45, 80, 0.45);
+        backdrop-filter: blur(3px);
+        z-index: 300;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .del-confirm.active {
+        display: flex;
+      }
+
+      .del-box {
+        background: var(--white);
+        border-radius: var(--radius-md);
+        padding: 32px 36px;
+        max-width: 400px;
+        width: 100%;
+        text-align: center;
+        box-shadow: var(--shadow-lg);
+        animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      }
+      .del-box .del-icon {
+        font-size: 44px;
+        margin-bottom: 12px;
+      }
+      .del-box h3 {
+        font-size: 20px;
+        color: var(--dark-blue);
+        margin-bottom: 8px;
+      }
+      .del-box p {
+        font-size: 14px;
+        color: var(--text-mid);
+        margin-bottom: 24px;
+        line-height: 1.6;
+      }
+      .del-box .del-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+      }
+
+      /* Highlight edited row */
+      tr.editing-row td {
+        background: #f0f8ff !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Mobile sidebar overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════════════════════════════ -->
+    <div class="app-shell">
+      <!-- ── SIDEBAR ─────────────────────────────────────────── -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+          <div class="brand-icon">🏥</div>
+          <div class="brand-text">
+            <h2>MedCare</h2>
+            <span>Hospital System</span>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <div class="nav-section-label">Main Menu</div>
+
+          <div
+            class="nav-item"
+            data-page="dashboard.html"
+            onclick="location.href = 'dashboard.html'">
+            <span class="nav-icon">📊</span> Dashboard
+          </div>
+          <div
+            class="nav-item"
+            data-page="appointments.html"
+            onclick="location.href = 'appointments.html'">
+            <span class="nav-icon">📅</span> Appointments
+            <span class="nav-badge">5</span>
+          </div>
+          <div
+            class="nav-item"
+            data-page="patients.html"
+            onclick="location.href = 'patients.html'">
+            <span class="nav-icon">🧑‍⚕️</span> Patients
+          </div>
+          <!-- Active page -->
+          <div
+            class="nav-item active"
+            data-page="doctors.html"
+            onclick="location.href = 'doctors.html'">
+            <span class="nav-icon">👨‍⚕️</span> Doctors
+          </div>
+
+          <div class="nav-section-label">Management</div>
+          <div
+            class="nav-item"
+            data-page="billing.html"
+            onclick="location.href = 'billing.html'">
+            <span class="nav-icon">💳</span> Billing
+          </div>
+          <div class="nav-item"><span class="nav-icon">📈</span> Reports</div>
+          <div class="nav-item"><span class="nav-icon">⚙️</span> Settings</div>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-user">
+            <div class="user-avatar">👤</div>
+            <div class="user-info">
+              <h4>Dr. Admin</h4>
+              <p>Super Admin</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ── MAIN CONTENT ────────────────────────────────────── -->
+      <div class="main-content">
+        <!-- TOP NAVBAR -->
+        <header class="topbar">
+          <button
+            class="topbar-toggle"
+            id="sidebarToggle"
+            aria-label="Toggle navigation">
+            ☰
+          </button>
+          <div class="topbar-title">Doctors</div>
+
+          <div class="topbar-search">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Search doctors, departments…" />
+          </div>
+
+          <div class="topbar-actions">
+            <span
+              id="topbarClock"
+              style="
+                font-size: 13px;
+                color: var(--text-mid);
+                white-space: nowrap;
+              "></span>
+            <button class="topbar-btn" title="Notifications">
+              🔔<span class="dot"></span>
+            </button>
+            <button class="topbar-btn" title="Messages">✉️</button>
+            <div class="topbar-avatar" title="My Profile">👤</div>
+          </div>
+        </header>
+
+        <!-- ── PAGE CONTENT ──────────────────────────────────── -->
+        <main class="page-content">
+          <!-- Page header -->
+          <div class="page-header anim-1">
+            <div>
+              <h1>Doctor Management</h1>
+              <p>Register new doctors and manage existing staff records</p>
+            </div>
+            <button
+              class="btn btn-outline"
+              onclick="
+                document
+                  .getElementById('doctorTable')
+                  .scrollIntoView({ behavior: 'smooth' })
+              ">
+              📋 View All Doctors
+            </button>
+          </div>
+
+          <!-- ── SUMMARY STAT CARDS ──────────────────────────── -->
+          <div class="doctor-stats">
+            <div class="doc-stat">
+              <div class="doc-stat-icon" style="background: #e8f1fd">👨‍⚕️</div>
+              <div class="doc-stat-info">
+                <div class="num" id="statTotal">0</div>
+                <div class="lbl">Total Doctors</div>
+              </div>
+            </div>
+
+            <div class="doc-stat">
+              <div class="doc-stat-icon" style="background: #e8f8f0">🟢</div>
+              <div class="doc-stat-info">
+                <div class="num" id="statAvailable">0</div>
+                <div class="lbl">Available Today</div>
+              </div>
+            </div>
+
+            <div class="doc-stat">
+              <div class="doc-stat-icon" style="background: #fef6e7">🏥</div>
+              <div class="doc-stat-info">
+                <div class="num" id="statDepts">0</div>
+                <div class="lbl">Departments</div>
+              </div>
+            </div>
+
+            <div class="doc-stat">
+              <div class="doc-stat-icon" style="background: #fdecea">🩺</div>
+              <div class="doc-stat-info">
+                <div class="num" id="statSpecs">0</div>
+                <div class="lbl">Specializations</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══════════════════════════════════════════════════
+           REGISTRATION FORM CARD
+      ═══════════════════════════════════════════════════ -->
+          <div class="form-card anim-2">
+            <div class="form-card-bar"></div>
+            <div class="form-card-inner">
+              <!-- Header row -->
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  flex-wrap: wrap;
+                  gap: 10px;
+                ">
+                <div>
+                  <h2
+                    style="
+                      font-size: 17px;
+                      font-weight: 700;
+                      color: var(--dark-blue);
+                    ">
+                    ➕ Register New Doctor
+                  </h2>
+                  <p
+                    style="
+                      font-size: 13px;
+                      color: var(--text-light);
+                      margin-top: 3px;
+                    ">
+                    Complete all required fields marked with
+                    <span style="color: var(--danger)">*</span>
+                  </p>
+                </div>
+                <button
+                  class="form-toggle-btn"
+                  id="formToggleBtn"
+                  onclick="toggleForm()">
+                  <i class="arrow">▼</i> Hide Form
+                </button>
+              </div>
+
+              <!-- Collapsible form body -->
+              <div class="form-collapsible" id="formCollapsible">
+                <form id="doctorForm" novalidate>
+                  <!-- Row 1: Doctor ID · Name · Specialization -->
+                  <div class="form-grid-3">
+                    <div class="form-group">
+                      <label for="fDoctorId">
+                        Doctor ID <span style="color: var(--danger)">*</span>
+                      </label>
+                      <!-- readonly — auto-generated -->
+                      <input
+                        type="text"
+                        id="fDoctorId"
+                        class="form-control"
+                        placeholder="e.g. D-1010"
+                        readonly />
+                    </div>
+
+                    <div class="form-group">
+                      <label for="fName">
+                        Full Name <span style="color: var(--danger)">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="fName"
+                        class="form-control"
+                        placeholder="e.g. Dr. Ananya Iyer"
+                        required />
+                    </div>
+
+                    <div class="form-group">
+                      <label for="fSpec">
+                        Specialization
+                        <span style="color: var(--danger)">*</span>
+                      </label>
+                      <select id="fSpec" class="form-control" required>
+                        <option value="">— Select —</option>
+                        <option>Cardiologist</option>
+                        <option>Neurologist</option>
+                        <option>Pediatrician</option>
+                        <option>Orthopedic Surgeon</option>
+                        <option>General Physician</option>
+                        <option>Dermatologist</option>
+                        <option>Gynecologist</option>
+                        <option>Ophthalmologist</option>
+                        <option>Psychiatrist</option>
+                        <option>Radiologist</option>
+                        <option>Oncologist</option>
+                        <option>ENT Specialist</option>
+                      </select>
+                    </div>
+                  </div>
+                  <!-- /row 1 -->
+
+                  <!-- Row 2: Department · Phone · Email -->
+                  <div class="form-grid-3">
+                    <div class="form-group">
+                      <label for="fDept">
+                        Department <span style="color: var(--danger)">*</span>
+                      </label>
+                      <select id="fDept" class="form-control" required>
+                        <option value="">— Select —</option>
+
+                        <option value="1">Cardiology</option>
+
+                        <option value="2">Neurology</option>
+
+                        <option value="3">Orthopedics</option>
+
+                        <option value="4">Pediatrics</option>
+
+                        <option value="5">Dermatology</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="fPhone">
+                        Phone <span style="color: var(--danger)">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        id="fPhone"
+                        class="form-control"
+                        placeholder="e.g. 9876543210"
+                        required />
+                    </div>
+
+                    <div class="form-group">
+                      <label for="fEmail">
+                        Email <span style="color: var(--danger)">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        id="fEmail"
+                        class="form-control"
+                        placeholder="e.g. doctor@medcare.com"
+                        required />
+                    </div>
+                  </div>
+                  <!-- /row 2 -->
+
+                  <!-- Row 3: Availability + Experience (optional extras) -->
+                  <div class="form-grid-3">
+                    <div class="form-group">
+                      <label for="fAvail">Availability</label>
+                      <select id="fAvail" class="form-control">
+                        <option value="available">Available</option>
+                        <option value="busy">Busy</option>
+                        <option value="off">Off Duty</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="fExp">Experience (years)</label>
+                      <input
+                        type="number"
+                        id="fExp"
+                        class="form-control"
+                        placeholder="e.g. 12"
+                        min="0"
+                        max="60" />
+                    </div>
+
+                    <div class="form-group">
+                      <label for="fQual">Qualification</label>
+                      <input
+                        type="text"
+                        id="fQual"
+                        class="form-control"
+                        placeholder="e.g. MBBS, MD" />
+                    </div>
+                  </div>
+                  <!-- /row 3 -->
+
+                  <!-- Buttons -->
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                      ✅ Register Doctor
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-ghost"
+                      onclick="resetForm()">
+                      🔄 Reset Form
+                    </button>
+                  </div>
+
+                  <!-- Inline feedback message -->
+                  <div id="formFeedback"></div>
+                </form>
+              </div>
+              <!-- /form-collapsible -->
+            </div>
+            <!-- /form-card-inner -->
+          </div>
+          <!-- /form-card -->
+
+          <!-- ══════════════════════════════════════════════════
+           DOCTORS TABLE CARD
+      ═══════════════════════════════════════════════════ -->
+          <div class="table-card anim-3" id="doctorTable">
+            <!-- Toolbar -->
+            <div class="table-toolbar">
+              <h2>Doctor Records</h2>
+              <span class="count-pill" id="doctorCount">0 doctors</span>
+
+              <!-- Live search -->
+              <div class="toolbar-search">
+                <span class="s-icon">🔍</span>
+                <input
+                  type="text"
+                  id="tableSearch"
+                  placeholder="Search by name, dept…"
+                  oninput="filterTable(this.value)" />
+              </div>
+
+              <!-- Department filter -->
+              <select
+                class="form-control btn-sm"
+                id="deptFilter"
+                style="width: auto; padding: 7px 14px; border-radius: 30px"
+                onchange="
+                  filterTable(document.getElementById('tableSearch').value)
+                ">
+                <option value="">All Departments</option>
+              </select>
+
+              <button
+                class="btn btn-ghost btn-sm"
+                onclick="alert('Export coming soon!')">
+                ⬇️ Export
+              </button>
+            </div>
+
+            <!-- Table -->
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Doctor ID</th>
+                    <th>Name</th>
+                    <th>Specialization</th>
+                    <th class="hide-mobile">Department</th>
+                    <th class="hide-mobile">Experience</th>
+                    <th class="hide-mobile">Phone</th>
+                    <th class="hide-mobile">Email</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <!-- Rows injected by JS -->
+                <tbody id="doctorTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <!-- /table-card -->
+        </main>
+      </div>
+      <!-- /main-content -->
+    </div>
+    <!-- /app-shell -->
+
+    <!-- ═══════════════════════════════════════════════════════════
+     EDIT DOCTOR MODAL
+══════════════════════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="editDoctorModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>✏️ Edit Doctor Record</h3>
+          <button class="modal-close">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <form id="editDoctorForm" novalidate>
+            <!-- Hidden index to know which record to update -->
+            <input type="hidden" id="eIndex" />
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="eDoctorId">Doctor ID</label>
+                <input
+                  type="text"
+                  id="eDoctorId"
+                  class="form-control"
+                  readonly />
+              </div>
+              <div class="form-group">
+                <label for="eName"
+                  >Full Name <span style="color: var(--danger)">*</span></label
+                >
+                <input type="text" id="eName" class="form-control" required />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="eSpec"
+                  >Specialization
+                  <span style="color: var(--danger)">*</span></label
+                >
+                <select id="eSpec" class="form-control" required>
+                  <option>Cardiologist</option>
+                  <option>Neurologist</option>
+                  <option>Pediatrician</option>
+                  <option>Orthopedic Surgeon</option>
+                  <option>General Physician</option>
+                  <option>Dermatologist</option>
+                  <option>Gynecologist</option>
+                  <option>Ophthalmologist</option>
+                  <option>Psychiatrist</option>
+                  <option>Radiologist</option>
+                  <option>Oncologist</option>
+                  <option>ENT Specialist</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="eDept"
+                  >Department <span style="color: var(--danger)">*</span></label
+                >
+                <select id="eDept" class="form-control" required>
+                  <option>Cardiology</option>
+                  <option>Neurology</option>
+                  <option>Pediatrics</option>
+                  <option>Orthopedics</option>
+                  <option>General Medicine</option>
+                  <option>Dermatology</option>
+                  <option>Gynecology</option>
+                  <option>Ophthalmology</option>
+                  <option>Psychiatry</option>
+                  <option>Radiology</option>
+                  <option>Oncology</option>
+                  <option>ENT</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ePhone"
+                  >Phone <span style="color: var(--danger)">*</span></label
+                >
+                <input type="tel" id="ePhone" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label for="eEmail"
+                  >Email <span style="color: var(--danger)">*</span></label
+                >
+                <input type="email" id="eEmail" class="form-control" required />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="eAvail">Availability</label>
+                <select id="eAvail" class="form-control">
+                  <option value="available">Available</option>
+                  <option value="busy">Busy</option>
+                  <option value="off">Off Duty</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="eExp">Experience (yrs)</label>
+                <input
+                  type="number"
+                  id="eExp"
+                  class="form-control"
+                  min="0"
+                  max="60" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="eQual">Qualification</label>
+              <input type="text" id="eQual" class="form-control" />
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal('editDoctorModal')">
+            Cancel
+          </button>
+          <button
+            class="btn btn-primary"
+            onclick="document.getElementById('editDoctorForm').requestSubmit()">
+            💾 Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+     DELETE CONFIRMATION DIALOG
+══════════════════════════════════════════════════════════════ -->
+    <div class="del-confirm" id="deleteConfirm">
+      <div class="del-box">
+        <div class="del-icon">🗑️</div>
+        <h3>Remove Doctor?</h3>
+        <p id="deleteConfirmText">
+          Are you sure you want to permanently remove this doctor record?
+        </p>
+        <div class="del-actions">
+          <button
+            class="btn btn-ghost"
+            onclick="
+              document
+                .getElementById('deleteConfirm')
+                .classList.remove('active')
+            ">
+            Cancel
+          </button>
+          <button class="btn btn-danger" id="confirmDeleteBtn">
+            Yes, Remove
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared JS -->
+    <script src="js/app.js"></script>
+
+    <!-- ─────────────────────────────────────────────────────────
+     DOCTORS PAGE — JavaScript
+────────────────────────────────────────────────────────── -->
+    <script>
+      const API_URL = "http://localhost:5000";
+      async function renderDoctors() {
+        try {
+          const response = await fetch(`${API_URL}/doctors`);
+
+          const doctors = await response.json();
+
+          const tbody = document.getElementById("doctorTableBody");
+
+          tbody.innerHTML = "";
+
+          doctors.forEach((doctor) => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+
+<td>${doctor.doctor_id}</td>
+
+<td>${doctor.doctor_name}</td>
+
+<td>${doctor.specialization}</td>
+
+<td>${doctor.department_id}</td>
+
+<td>-</td>
+
+<td>${doctor.phone}</td>
+
+<td>${doctor.email}</td>
+
+<td>Available</td>
+
+<td>
+
+  <button
+    class="btn-icon btn-danger"
+    onclick="deleteDoctor(${doctor.doctor_id})">
+    🗑️
+  </button>
+
+</td>
+`;
+
+            tbody.appendChild(row);
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      document
+        .getElementById("doctorForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const doctor_name = document.getElementById("fName").value;
+
+          const specialization = document.getElementById("fSpec").value;
+
+          const phone = document.getElementById("fPhone").value;
+
+          const email = document.getElementById("fEmail").value;
+
+          const department_id = document.getElementById("fDept").value;
+
+          const doctorData = {
+            doctor_name,
+            specialization,
+            phone,
+            email,
+            department_id,
+          };
+
+          try {
+            const response = await fetch(`${API_URL}/add-doctor`, {
+              method: "POST",
+
+              headers: {
+                "Content-Type": "application/json",
+              },
+
+              body: JSON.stringify(doctorData),
+            });
+
+            const result = await response.text();
+
+            alert(result);
+
+            document.getElementById("doctorForm").reset();
+
+            renderDoctors();
+          } catch (error) {
+            console.log(error);
+          }
+        });
+
+      async function deleteDoctor(id) {
+        const confirmDelete = confirm("Delete this doctor?");
+
+        if (!confirmDelete) return;
+
+        try {
+          const response = await fetch(`${API_URL}/delete-doctor/${id}`, {
+            method: "DELETE",
+          });
+
+          const result = await response.text();
+
+          alert(result);
+
+          renderDoctors();
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      /* Which record is pending deletion */
+      let pendingDeleteIndex = null;
+
+      /* ══════════════════════════════════════════════════════════
+        
+
+    
+
+      
+
+     
+      /* ══════════════════════════════════════════════════════════
+         6. FORM COLLAPSE / EXPAND TOGGLE
+      ══════════════════════════════════════════════════════════ */
+      function toggleForm() {
+        const body = document.getElementById("formCollapsible");
+        const btn = document.getElementById("formToggleBtn");
+        const isHidden = body.classList.contains("hidden");
+
+        if (isHidden) {
+          body.classList.remove("hidden");
+          btn.classList.remove("collapsed");
+          btn.innerHTML = `<i class="arrow">▼</i> Hide Form`;
+        } else {
+          body.classList.add("hidden");
+          btn.classList.add("collapsed");
+          btn.innerHTML = `<i class="arrow">▼</i> Show Form`;
+        }
+      }
+
+      /* ══════════════════════════════════════════════════════════
+         8. RESET REGISTRATION FORM
+      ══════════════════════════════════════════════════════════ */
+      function resetForm() {
+        document.getElementById("doctorForm").reset();
+        hideFeedback();
+      }
+
+      /* ══════════════════════════════════════════════════════════
+         9. FEEDBACK HELPERS
+      ══════════════════════════════════════════════════════════ */
+      function showFeedback(msg, type) {
+        const el = document.getElementById("formFeedback");
+        el.textContent = msg;
+        el.style.display = "block";
+        el.style.background = type === "success" ? "#e8f8f0" : "#fdecea";
+        el.style.color =
+          type === "success" ? "var(--success)" : "var(--danger)";
+        el.style.border =
+          type === "success" ? "1.5px solid #b7e5cc" : "1.5px solid #f5c6c2";
+      }
+
+      function hideFeedback() {
+        document.getElementById("formFeedback").style.display = "none";
+      }
+
+      document
+        .getElementById("confirmDeleteBtn")
+        .addEventListener("click", () => {
+          if (pendingDeleteIndex === null) return;
+          doctors.splice(pendingDeleteIndex, 1);
+          pendingDeleteIndex = null;
+          document.getElementById("deleteConfirm").classList.remove("active");
+          rebuildDeptFilter();
+          renderTable(document.getElementById("tableSearch").value);
+        });
+
+      /* Close delete dialog with Escape key */
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          document.getElementById("deleteConfirm").classList.remove("active");
+          pendingDeleteIndex = null;
+        }
+      });
+
+      /* Close delete dialog by clicking the backdrop */
+      document
+        .getElementById("deleteConfirm")
+        .addEventListener("click", function (e) {
+          if (e.target === this) {
+            this.classList.remove("active");
+            pendingDeleteIndex = null;
+          }
+        });
+
+      /* ══════════════════════════════════════════════════════════
+         15. INITIALISE PAGE
+      ══════════════════════════════════════════════════════════ */
+      document.addEventListener("DOMContentLoaded", () => {
+        renderDoctors();
+      });
+    </script>
+  </body>
+</html>

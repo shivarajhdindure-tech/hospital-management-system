@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login — MedCare HMS</title>
+
+    <!-- Shared stylesheet from the project -->
+    <link rel="stylesheet" href="css/style.css" />
+
+    <!-- ─────────────────────────────────────────────────────────
+       LOGIN PAGE — page-specific styles
+       These only apply to login.html so they live here,
+       not in the shared style.css
+  ────────────────────────────────────────────────────────── -->
+    <style>
+      /* ── Override body background for login page ── */
+      body {
+        background: var(--pale-blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      /* ── Outer wrapper — the split-screen card ─────────────
+       Two columns side by side:
+       Left  = branding / illustration panel
+       Right = login form panel
+    ────────────────────────────────────────────────────── */
+      .login-card {
+        width: 100%;
+        max-width: 960px;
+        min-height: 580px;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* equal halves */
+        overflow: hidden;
+
+        /* Animate the whole card sliding in on load */
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeSlideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards;
+      }
+
+      /* ══════════════════════════════════════════════════════
+       LEFT PANEL — branding & illustration
+    ══════════════════════════════════════════════════════ */
+      .login-left {
+        background: linear-gradient(
+          150deg,
+          var(--darker-blue) 0%,
+          var(--dark-blue) 50%,
+          #1a5a9a 100%
+        );
+        color: var(--white);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 40px;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+      }
+
+      /* Decorative background circles (pure CSS) */
+      .login-left::before,
+      .login-left::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+      }
+
+      /* Large circle — top right */
+      .login-left::before {
+        width: 320px;
+        height: 320px;
+        top: -100px;
+        right: -100px;
+        background: rgba(59, 159, 209, 0.15);
+      }
+
+      /* Small circle — bottom left */
+      .login-left::after {
+        width: 200px;
+        height: 200px;
+        bottom: -70px;
+        left: -70px;
+        background: rgba(26, 115, 232, 0.12);
+      }
+
+      /* Extra decorative ring — mid panel */
+      .deco-ring {
+        position: absolute;
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.06);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+      }
+
+      /* Hospital cross / logo icon */
+      .brand-emblem {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(
+          135deg,
+          var(--mid-blue),
+          var(--accent-blue)
+        );
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 38px;
+        box-shadow: 0 8px 32px rgba(26, 115, 232, 0.45);
+        margin-bottom: 24px;
+        position: relative;
+        z-index: 1;
+
+        /* Subtle pulse animation */
+        animation: pulse 3s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          box-shadow: 0 8px 32px rgba(26, 115, 232, 0.45);
+        }
+        50% {
+          box-shadow: 0 8px 48px rgba(26, 115, 232, 0.75);
+        }
+      }
+
+      /* Hospital name */
+      .login-left h1 {
+        font-family: var(--font-display);
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Tagline under name */
+      .login-left .tagline {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.6;
+        max-width: 260px;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Divider line between tagline and feature list */
+      .left-divider {
+        width: 50px;
+        height: 2px;
+        background: rgba(59, 159, 209, 0.6);
+        border-radius: 2px;
+        margin: 24px auto;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Feature / highlight list */
+      .feature-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        text-align: left;
+        position: relative;
+        z-index: 1;
+      }
+
+      .feature-list li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.75);
+      }
+
+      /* Icon chip for each feature */
+      .feature-list li .feat-icon {
+        width: 28px;
+        height: 28px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+      }
+
+      /* ══════════════════════════════════════════════════════
+       RIGHT PANEL — login form
+    ══════════════════════════════════════════════════════ */
+      .login-right {
+        background: var(--white);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 48px 44px;
+      }
+
+      /* "Welcome back" heading */
+      .login-right .form-heading {
+        margin-bottom: 6px;
+      }
+
+      .login-right .form-heading h2 {
+        font-family: var(--font-display);
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--dark-blue);
+      }
+
+      .login-right .form-heading p {
+        font-size: 14px;
+        color: var(--text-light);
+        margin-top: 4px;
+      }
+
+      /* Separator bar under heading */
+      .form-divider {
+        width: 40px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent-blue), var(--mid-blue));
+        border-radius: 2px;
+        margin: 16px 0 28px;
+      }
+
+      /* ── Input wrapper — icon + field ───────────────────── */
+      .input-wrapper {
+        position: relative;
+      }
+
+      /* Icon inside input on the left */
+      .input-wrapper .input-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        color: var(--text-light);
+        pointer-events: none; /* don't block clicks */
+        transition: var(--transition);
+      }
+
+      /* Shift input text so it doesn't overlap the icon */
+      .input-wrapper .form-control {
+        padding-left: 42px;
+      }
+
+      /* When the input is focused, colour the icon */
+      .input-wrapper:focus-within .input-icon {
+        color: var(--accent-blue);
+      }
+
+      /* Password toggle button (👁 / 🙈) */
+      .pw-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        color: var(--text-light);
+        padding: 4px;
+        transition: var(--transition);
+      }
+
+      .pw-toggle:hover {
+        color: var(--accent-blue);
+      }
+
+      /* ── Remember me + Forgot password row ─────────────── */
+      .form-extras {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      /* Custom styled checkbox */
+      .remember-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text-mid);
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .remember-label input[type="checkbox"] {
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--border);
+        border-radius: 4px;
+        background: var(--white);
+        cursor: pointer;
+        transition: var(--transition);
+        flex-shrink: 0;
+        position: relative;
+      }
+
+      /* Checked state */
+      .remember-label input[type="checkbox"]:checked {
+        background: var(--accent-blue);
+        border-color: var(--accent-blue);
+      }
+
+      /* Checkmark drawn with pseudo-element */
+      .remember-label input[type="checkbox"]:checked::after {
+        content: "";
+        position: absolute;
+        top: 1px;
+        left: 4px;
+        width: 5px;
+        height: 9px;
+        border: 2px solid var(--white);
+        border-top: none;
+        border-left: none;
+        transform: rotate(45deg);
+      }
+
+      /* Forgot password link */
+      .forgot-link {
+        font-size: 13px;
+        color: var(--accent-blue);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+
+      .forgot-link:hover {
+        color: var(--dark-blue);
+        text-decoration: underline;
+      }
+
+      /* ── Login button — full width ──────────────────────── */
+      .btn-login {
+        width: 100%;
+        justify-content: center;
+        padding: 13px 20px;
+        font-size: 15px;
+        border-radius: var(--radius-sm);
+        letter-spacing: 0.3px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Ripple / shimmer effect on hover */
+      .btn-login::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.15),
+          transparent
+        );
+        transform: translateX(-100%);
+        transition: transform 0.5s ease;
+      }
+
+      .btn-login:hover::after {
+        transform: translateX(100%);
+      }
+
+      /* Inline spinner shown while "logging in" */
+      .btn-login .spinner {
+        display: none; /* hidden until JS shows it */
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-top-color: var(--white);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ── Error / success message box ───────────────────── */
+      .form-message {
+        display: none; /* shown by JS */
+        padding: 11px 14px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 20px;
+        border: 1.5px solid transparent;
+      }
+
+      .form-message.error {
+        background: #fdecea;
+        color: var(--danger);
+        border-color: #f5c6c2;
+      }
+
+      .form-message.success {
+        background: #e8f8f0;
+        color: var(--success);
+        border-color: #b7e5cc;
+      }
+
+      /* ── Footer link — sign up / contact ───────────────── */
+      .login-footer {
+        margin-top: 28px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+        font-size: 13px;
+        color: var(--text-light);
+      }
+
+      .login-footer a {
+        color: var(--accent-blue);
+        font-weight: 600;
+      }
+
+      .login-footer a:hover {
+        text-decoration: underline;
+      }
+
+      /* ── Input shake animation on wrong password ────────── */
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        20% {
+          transform: translateX(-8px);
+        }
+        40% {
+          transform: translateX(8px);
+        }
+        60% {
+          transform: translateX(-6px);
+        }
+        80% {
+          transform: translateX(6px);
+        }
+      }
+
+      .shake {
+        animation: shake 0.4s ease;
+      }
+
+      /* ── Responsive: stack panels vertically on mobile ─── */
+      @media (max-width: 700px) {
+        body {
+          padding: 0;
+          align-items: flex-start;
+        }
+
+        .login-card {
+          grid-template-columns: 1fr; /* single column */
+          border-radius: 0;
+          min-height: 100vh;
+          box-shadow: none;
+        }
+
+        /* Shrink left panel on mobile */
+        .login-left {
+          padding: 36px 28px 32px;
+          min-height: auto;
+        }
+
+        .login-left h1 {
+          font-size: 26px;
+        }
+
+        /* Hide feature list on very small screens */
+        .feature-list {
+          display: none;
+        }
+        .left-divider {
+          display: none;
+        }
+
+        .login-right {
+          padding: 36px 24px 40px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ═══════════════════════════════════════════════════════════
+     LOGIN CARD — Split screen layout
+     Left panel:  branding / hospital info
+     Right panel: login form
+══════════════════════════════════════════════════════════════ -->
+    <div class="login-card">
+      <!-- ─────────────────────────────────────────────────────────
+       LEFT PANEL — Branding & illustration
+  ────────────────────────────────────────────────────────── -->
+      <div class="login-left">
+        <!-- Decorative ring (CSS circle in background) -->
+        <div class="deco-ring"></div>
+
+        <!-- Hospital logo / emblem -->
+        <div class="brand-emblem">🏥</div>
+
+        <!-- Hospital name -->
+        <h1>MedCare HMS</h1>
+
+        <!-- Short description -->
+        <p class="tagline">
+          Your complete hospital appointment &amp; patient management platform.
+        </p>
+
+        <!-- Decorative horizontal line -->
+        <div class="left-divider"></div>
+
+        <!-- Feature highlights list -->
+        <ul class="feature-list">
+          <li>
+            <span class="feat-icon">📅</span>
+            Smart appointment scheduling
+          </li>
+          <li>
+            <span class="feat-icon">🧑‍⚕️</span>
+            Patient records &amp; history
+          </li>
+          <li>
+            <span class="feat-icon">👨‍⚕️</span>
+            Doctor availability management
+          </li>
+          <li>
+            <span class="feat-icon">💳</span>
+            Billing &amp; invoicing system
+          </li>
+          <!-- <li>
+            <span class="feat-icon">📊</span>
+            Real-time dashboard analytics
+          </li> -->
+        </ul>
+      </div>
+      <!-- /login-left -->
+
+      <!-- ─────────────────────────────────────────────────────────
+       RIGHT PANEL — Login form
+  ────────────────────────────────────────────────────────── -->
+      <div class="login-right">
+        <!-- Heading -->
+        <div class="form-heading">
+          <h2>Welcome Back 👋</h2>
+          <p>Sign in to your MedCare account to continue.</p>
+        </div>
+
+        <!-- Blue accent line under heading -->
+        <div class="form-divider"></div>
+
+        <!-- ── Error / success message (shown by JS) ────────── -->
+        <div class="form-message" id="formMessage"></div>
+
+        <!-- ════════════════════════════════════════════════════
+         LOGIN FORM
+         novalidate = we handle validation ourselves in JS
+    ═══════════════════════════════════════════════════════ -->
+        <form id="loginForm" novalidate>
+          <!-- Email field -->
+          <div class="form-group">
+            <label for="loginEmail">Email Address</label>
+            <div class="input-wrapper">
+              <span class="input-icon">✉️</span>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                placeholder="you@medcare.com"
+                autocomplete="email" />
+            </div>
+          </div>
+
+          <!-- Password field -->
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🔒</span>
+              <input
+                type="password"
+                id="password"
+                class="form-control"
+                placeholder="Enter your password"
+                autocomplete="current-password" />
+              <!-- Toggle password visibility -->
+              <!-- <button
+                type="button"
+                class="pw-toggle"
+                id="pwToggle"
+                aria-label="Toggle password visibility"
+                title="Show / hide password">
+                👁️
+              </button> -->
+            </div>
+          </div>
+
+          <!-- Remember Me + Forgot Password -->
+          <div class="form-extras">
+            <!-- Remember me checkbox -->
+            <label class="remember-label">
+              <input type="checkbox" id="rememberMe" />
+              Remember me for 30 days
+            </label>
+
+            <!-- Forgot password — opens modal -->
+            <!-- <span
+              class="forgot-link"
+              onclick="openModal('forgotPasswordModal')">
+              Forgot password?
+            </span> -->
+          </div>
+
+          <!-- Login submit button -->
+          <button type="submit" class="btn btn-primary btn-login" id="loginBtn">
+            <!-- Spinner (hidden until loading) -->
+            <span class="spinner" id="loginSpinner"></span>
+            <!-- Button text -->
+            <span id="loginBtnText">Sign In →</span>
+          </button>
+        </form>
+        <!-- /loginForm -->
+
+        <!-- Footer: contact admin link -->
+        <div class="login-footer">
+          New staff member?
+          <a href="mailto:admin@gmail.com">Contact your administrator</a>
+          to get access.
+        </div>
+      </div>
+      <!-- /login-right -->
+    </div>
+    <!-- /login-card -->
+
+    <!-- ═══════════════════════════════════════════════════════════
+     FORGOT PASSWORD MODAL
+     Opened by clicking "Forgot password?" link.
+     Uses the shared modal system from app.js.
+══════════════════════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="forgotPasswordModal">
+      <div class="modal">
+        <!-- Modal header -->
+        <div class="modal-header">
+          <h3>🔑 Reset Password</h3>
+          <button class="modal-close" aria-label="Close">✕</button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body">
+          <p
+            style="
+              font-size: 14px;
+              color: var(--text-mid);
+              margin-bottom: 20px;
+              line-height: 1.6;
+            ">
+            Enter the email address associated with your account and we'll send
+            you a password reset link.
+          </p>
+
+          <form id="forgotForm" novalidate>
+            <div class="form-group" style="margin-bottom: 0">
+              <label for="forgotEmail">Email Address</label>
+              <div class="input-wrapper">
+                <span class="input-icon">✉️</span>
+                <input
+                  type="email"
+                  id="forgotEmail"
+                  class="form-control"
+                  placeholder="you@medcare.com" />
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button
+            class="btn btn-ghost"
+            onclick="closeModal('forgotPasswordModal')">
+            Cancel
+          </button>
+          <button
+            class="btn btn-primary"
+            id="forgotSubmitBtn"
+            onclick="handleForgotPassword()">
+            Send Reset Link
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- /forgotPasswordModal -->
+
+    <!-- ── Shared JavaScript ─────────────────────────────────── -->
+    <script src="js/app.js"></script>
+
+    <!-- ─────────────────────────────────────────────────────────
+     LOGIN PAGE — page-specific JavaScript
+     Kept separate from app.js since it only applies here.
+────────────────────────────────────────────────────────── -->
+    <script>
+      const API_URL = "http://localhost:5000";
+
+      /* ── Helpers to show / hide the message box ─────────── */
+
+      /**
+       * Show a message above the form.
+       * @param {string} text    - message to display
+       * @param {string} type    - "error" | "success"
+       */
+      function showMessage(text, type) {
+        const box = document.getElementById("formMessage");
+        box.textContent = text;
+        box.className = `form-message ${type}`;
+        box.style.display = "block";
+      }
+
+      /** Hide the message box */
+      function hideMessage() {
+        const box = document.getElementById("formMessage");
+        box.style.display = "none";
+      }
+
+      /* ── Password visibility toggle ─────────────────────── */
+      // document
+      //   .getElementById("pwToggle")
+      //   .addEventListener("click", function () {
+      //     const pwField = document.getElementById("loginPassword");
+
+      //     if (pwField.type === "password") {
+      //       pwField.type = "text"; /* show password */
+      //       this.textContent = "🙈"; /* closed eye emoji */
+      //     } else {
+      //       pwField.type = "password"; /* hide password */
+      //       this.textContent = "👁️"; /* open eye emoji */
+      //     }
+      //   });
+
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const email = document.getElementById("email").value;
+
+          const password = document.getElementById("password").value;
+
+          try {
+            const response = await fetch(`${API_URL}/login`, {
+              method: "POST",
+
+              headers: {
+                "Content-Type": "application/json",
+              },
+
+              body: JSON.stringify({
+                email,
+                password,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              alert("Login Successful");
+
+              // Save logged-in user
+              localStorage.setItem("loggedInUser", JSON.stringify(data.user));
+
+              // Redirect
+              window.location.href = "dashboard.html";
+            } else {
+              alert(data.message);
+            }
+          } catch (error) {
+            console.log(error);
+
+            alert("Server Error");
+          }
+        });
+
+      /* ── Forgot password modal handler ──────────────────── */
+      function handleForgotPassword() {
+        const email = document.getElementById("forgotEmail").value.trim();
+
+        if (!email) {
+          alert("⚠️ Please enter your email address first.");
+          return;
+        }
+
+        /* Simulate sending reset email */
+        const submitBtn = document.getElementById("forgotSubmitBtn");
+        submitBtn.textContent = "Sending…";
+        submitBtn.disabled = true;
+
+        setTimeout(() => {
+          closeModal("forgotPasswordModal");
+
+          /* Show confirmation message on the main form */
+          showMessage(
+            `📧 A password reset link has been sent to ${email}`,
+            "success",
+          );
+
+          /* Reset the forgot form */
+          document.getElementById("forgotEmail").value = "";
+          submitBtn.textContent = "Send Reset Link";
+          submitBtn.disabled = false;
+        }, 1500);
+      }
+
+      /* ── Auto-fill email if "Remember me" was checked before */
+      window.addEventListener("DOMContentLoaded", () => {
+        const saved = localStorage.getItem("hms_remembered_email");
+        if (saved) {
+          document.getElementById("loginEmail").value = saved;
+          document.getElementById("rememberMe").checked = true;
+          /* Move focus to password field since email is already filled */
+          document.getElementById("loginPassword").focus();
+        }
+      });
+
+      /* ── Hint text below form (for demo purposes) ────────── */
+      /* Shows the demo credentials so testers know what to use */
+      const hint = document.createElement("p");
+      hint.style.cssText = `
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--text-light);
+    text-align: center;
+    background: var(--pale-blue);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px dashed var(--border);
+  `;
+      hint.innerHTML = `
+    🧪 <strong>Demo credentials:</strong>
+    admin@gmail.com &nbsp;/&nbsp; admin123
+  `;
+      document.getElementById("loginForm").appendChild(hint);
+    </script>
+  </body>
+</html>
