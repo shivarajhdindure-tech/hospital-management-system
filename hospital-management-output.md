@@ -3,8 +3,8 @@
 ## 📊 Project Information
 
 - **Project Name**: `hospital-management`
-- **Generated On**: 2026-05-19 12:18:40 (Asia/Calcutta / GMT+06:30)
-- **Total Files Processed**: 14
+- **Generated On**: 2026-05-19 13:16:17 (Asia/Calcutta / GMT+06:30)
+- **Total Files Processed**: 15
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
 
@@ -21,7 +21,7 @@
 
 ```
 ├── 📁 config/
-│   └── 📄 db.js (380 B)
+│   └── 📄 db.js (454 B)
 ├── 📁 css/
 │   └── 📄 style.css (23.87 KB)
 ├── 📁 js/
@@ -35,6 +35,7 @@
 ├── 📄 package-lock.json (33.58 KB)
 ├── 📄 package.json (380 B)
 ├── 📄 patients.html (40.52 KB)
+├── 📄 README.md (28 B)
 ├── 📄 server.js (11.49 KB)
 └── 📄 settings.html (4.07 KB)
 ```
@@ -55,6 +56,7 @@
 - [📄 package-lock.json](#📄-package-lock-json)
 - [📄 package.json](#📄-package-json)
 - [📄 patients.html](#📄-patients-html)
+- [📄 README.md](#📄-readme-md)
 - [📄 server.js](#📄-server-js)
 - [📄 settings.html](#📄-settings-html)
 
@@ -64,11 +66,11 @@
 
 | Metric | Count |
 |--------|-------|
-| Total Files | 14 |
+| Total Files | 15 |
 | Total Directories | 3 |
-| Text Files | 14 |
+| Text Files | 15 |
 | Binary Files | 0 |
-| Total Size | 320.26 KB |
+| Total Size | 320.36 KB |
 
 ### 📄 File Types Distribution
 
@@ -78,21 +80,22 @@
 | `.js` | 3 |
 | `.json` | 2 |
 | `.css` | 1 |
+| `.md` | 1 |
 
 ## 💻 File Code Contents
 
 ### <a id="📄-config-db-js"></a>📄 `config/db.js`
 
 **File Info:**
-- **Size**: 380 B
+- **Size**: 454 B
 - **Extension**: `.js`
 - **Language**: `javascript`
 - **Location**: `config/db.js`
 - **Relative Path**: `config`
 - **Created**: 2026-05-12 08:50:27 (Asia/Calcutta / GMT+06:30)
-- **Modified**: 2026-05-12 08:51:03 (Asia/Calcutta / GMT+06:30)
-- **MD5**: `c5f554b1fae8658b925667b2eb15d520`
-- **SHA256**: `39d7a6ccab604cd2a6613135497e0e6c93bc4607c83750931246c96d425e194a`
+- **Modified**: 2026-05-19 13:16:17 (Asia/Calcutta / GMT+06:30)
+- **MD5**: `f5275566ab1485473135dd9dcd86d784`
+- **SHA256**: `449dabe3cd8dbe45a6de9d6f5c419b13673e3ee8802b07a26b81fa87c2740f10`
 - **Encoding**: ASCII
 
 **File code content:**
@@ -100,22 +103,29 @@
 ```javascript
 const mysql = require("mysql2");
 
-const connection = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "root",
-  database: "hospital_management",
+const db = mysql.createConnection({
+  host: process.env.DB_HOST,
+
+  port: process.env.DB_PORT,
+
+  user: process.env.DB_USER,
+
+  password: process.env.DB_PASSWORD,
+
+  database: process.env.DB_NAME,
 });
 
-connection.connect((err) => {
+db.connect((err) => {
   if (err) {
     console.log("Database connection failed");
+
+    console.log(err);
   } else {
-    console.log("Connected to MySQL Database");
+    console.log("Connected to Railway MySQL");
   }
 });
 
-module.exports = connection;
+module.exports = db;
 
 ```
 
@@ -9570,6 +9580,28 @@ document.addEventListener("DOMContentLoaded", () => {
 </html>
 
 ```
+
+---
+
+### <a id="📄-readme-md"></a>📄 `README.md`
+
+**File Info:**
+- **Size**: 28 B
+- **Extension**: `.md`
+- **Language**: `text`
+- **Location**: `README.md`
+- **Relative Path**: `root`
+- **Created**: 2026-05-19 12:28:36 (Asia/Calcutta / GMT+06:30)
+- **Modified**: 2026-05-19 12:28:36 (Asia/Calcutta / GMT+06:30)
+- **MD5**: `965ea616523b4498ee2bbeeec78c716c`
+- **SHA256**: `f660540b67c3a53b54b771107693ce6a86a2e6dc32839692311651db0858ad99`
+- **Encoding**: ASCII
+
+**File code content:**
+
+````markdown
+# hospital-management-system
+````
 
 ---
 
