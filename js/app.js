@@ -172,7 +172,9 @@ async function renderAppointmentsTable() {
   if (!tbody) return;
 
   try {
-    const response = await fetch("http://localhost:5000/appointments");
+    const response = await fetch(
+      "https://hospital-management-system-ocss.onrender.com/appointments",
+    );
 
     const appointments = await response.json();
 
@@ -258,7 +260,9 @@ async function renderTodaySchedule() {
   if (!list) return;
 
   try {
-    const response = await fetch("http://localhost:5000/appointments");
+    const response = await fetch(
+      "https://hospital-management-system-ocss.onrender.com/appointments",
+    );
 
     const appointments = await response.json();
 

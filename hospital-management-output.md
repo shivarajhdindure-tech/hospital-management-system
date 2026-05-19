@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `hospital-management`
-- **Generated On**: 2026-05-19 13:16:17 (Asia/Calcutta / GMT+06:30)
+- **Generated On**: 2026-05-19 13:22:57 (Asia/Calcutta / GMT+06:30)
 - **Total Files Processed**: 15
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -25,19 +25,19 @@
 ├── 📁 css/
 │   └── 📄 style.css (23.87 KB)
 ├── 📁 js/
-│   └── 📄 app.js (11.59 KB)
+│   └── 📄 app.js (11.68 KB)
 ├── 📄 appointments.html (44.07 KB)
 ├── 📄 billing.html (51.69 KB)
 ├── 📄 dashboard.html (27.38 KB)
 ├── 📄 doctors.html (41.6 KB)
 ├── 📄 index.html (1.98 KB)
-├── 📄 login.html (27.68 KB)
+├── 📄 login.html (27.71 KB)
 ├── 📄 package-lock.json (33.58 KB)
 ├── 📄 package.json (380 B)
-├── 📄 patients.html (40.52 KB)
+├── 📄 patients.html (40.55 KB)
 ├── 📄 README.md (28 B)
 ├── 📄 server.js (11.49 KB)
-└── 📄 settings.html (4.07 KB)
+└── 📄 settings.html (4.1 KB)
 ```
 
 ## 📑 Table of Contents
@@ -70,7 +70,7 @@
 | Total Directories | 3 |
 | Text Files | 15 |
 | Binary Files | 0 |
-| Total Size | 320.36 KB |
+| Total Size | 320.54 KB |
 
 ### 📄 File Types Distribution
 
@@ -1295,15 +1295,15 @@ select.form-control {
 ### <a id="📄-js-app-js"></a>📄 `js/app.js`
 
 **File Info:**
-- **Size**: 11.59 KB
+- **Size**: 11.68 KB
 - **Extension**: `.js`
 - **Language**: `javascript`
 - **Location**: `js/app.js`
 - **Relative Path**: `js`
 - **Created**: 2026-05-12 05:39:18 (Asia/Calcutta / GMT+06:30)
-- **Modified**: 2026-05-19 11:53:42 (Asia/Calcutta / GMT+06:30)
-- **MD5**: `16cc0de5845dc53e8e91cc517446e4f0`
-- **SHA256**: `3585df20183b5ef1bf807e414738b0f3c5766020061a8008af04ec71a2d20034`
+- **Modified**: 2026-05-19 13:22:56 (Asia/Calcutta / GMT+06:30)
+- **MD5**: `0dc0992b7979ef388e990211ed6f5085`
+- **SHA256**: `43937cc0956679f73e2c118e40b109cb5d683b673346f325e75baa073a88da79`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -1483,7 +1483,9 @@ async function renderAppointmentsTable() {
   if (!tbody) return;
 
   try {
-    const response = await fetch("http://localhost:5000/appointments");
+    const response = await fetch(
+      "https://hospital-management-system-ocss.onrender.com/appointments",
+    );
 
     const appointments = await response.json();
 
@@ -1569,7 +1571,9 @@ async function renderTodaySchedule() {
   if (!list) return;
 
   try {
-    const response = await fetch("http://localhost:5000/appointments");
+    const response = await fetch(
+      "https://hospital-management-system-ocss.onrender.com/appointments",
+    );
 
     const appointments = await response.json();
 
@@ -6494,15 +6498,15 @@ document.addEventListener("DOMContentLoaded", () => {
 ### <a id="📄-login-html"></a>📄 `login.html`
 
 **File Info:**
-- **Size**: 27.68 KB
+- **Size**: 27.71 KB
 - **Extension**: `.html`
 - **Language**: `html`
 - **Location**: `login.html`
 - **Relative Path**: `root`
 - **Created**: 2026-05-12 05:36:55 (Asia/Calcutta / GMT+06:30)
-- **Modified**: 2026-05-19 12:18:40 (Asia/Calcutta / GMT+06:30)
-- **MD5**: `55612240d97abaa05d694916442cfe80`
-- **SHA256**: `37df502c97ac782481b87ffb8342b2731e2c8a70d69618c395257cad7437ec86`
+- **Modified**: 2026-05-19 13:22:33 (Asia/Calcutta / GMT+06:30)
+- **MD5**: `f02645f0833b2ffaa6239c7e49fe5926`
+- **SHA256**: `c4cb31b3e203edf62d928f9c7dcefcf4cd9c65d529632209e40e8099c34fea49`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -7234,7 +7238,7 @@ document.addEventListener("DOMContentLoaded", () => {
      Kept separate from app.js since it only applies here.
 ────────────────────────────────────────────────────────── -->
     <script>
-      const API_URL = "http://localhost:5000";
+      const API_URL = "https://hospital-management-system-ocss.onrender.com";
 
       /* ── Helpers to show / hide the message box ─────────── */
 
@@ -8423,15 +8427,15 @@ document.addEventListener("DOMContentLoaded", () => {
 ### <a id="📄-patients-html"></a>📄 `patients.html`
 
 **File Info:**
-- **Size**: 40.52 KB
+- **Size**: 40.55 KB
 - **Extension**: `.html`
 - **Language**: `html`
 - **Location**: `patients.html`
 - **Relative Path**: `root`
 - **Created**: 2026-05-12 05:37:07 (Asia/Calcutta / GMT+06:30)
-- **Modified**: 2026-05-12 09:15:26 (Asia/Calcutta / GMT+06:30)
-- **MD5**: `b6d36a87760323ff02b97a9c9204249b`
-- **SHA256**: `fd4a84e9c5d5205b58b9e6c02a751b7e5478d5bfea2d98caa694c91b5da469bc`
+- **Modified**: 2026-05-19 13:22:38 (Asia/Calcutta / GMT+06:30)
+- **MD5**: `46088042fc747e0df59748eee59f1977`
+- **SHA256**: `fcdf7fd1b557c1227e4ec358f672703c1e57d7c63a3dced12777644986621d5d`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -9242,7 +9246,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       /* Index of patient scheduled for deletion (set when delete btn clicked) */
       let pendingDeleteIndex = null;
-      const API_URL = "http://localhost:5000";
+      const API_URL = "https://hospital-management-system-ocss.onrender.com";
       /* ══════════════════════════════════════════════════════════
      2. RENDER TABLE
      Clears and rebuilds all rows from the patients array.
@@ -10130,15 +10134,15 @@ app.listen(5000, () => {
 ### <a id="📄-settings-html"></a>📄 `settings.html`
 
 **File Info:**
-- **Size**: 4.07 KB
+- **Size**: 4.1 KB
 - **Extension**: `.html`
 - **Language**: `html`
 - **Location**: `settings.html`
 - **Relative Path**: `root`
 - **Created**: 2026-05-19 11:57:29 (Asia/Calcutta / GMT+06:30)
-- **Modified**: 2026-05-19 11:57:37 (Asia/Calcutta / GMT+06:30)
-- **MD5**: `54e7cb63524f0014ed5c92508e9c8f0e`
-- **SHA256**: `91561d4b2c55c9d1dd8551ac482207c5263cb7b06e5db8977700895b2dce7c1c`
+- **Modified**: 2026-05-19 13:22:43 (Asia/Calcutta / GMT+06:30)
+- **MD5**: `bb132ed093d180a6347fbdc493902c4b`
+- **SHA256**: `615f9fa384b5a2e71435987fddb8cbb90f165ab1e513dfc47a6c7bd1bff8cafa`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -10238,7 +10242,7 @@ app.listen(5000, () => {
     </div>
 
     <script>
-      const API_URL = "http://localhost:5000";
+      const API_URL = "https://hospital-management-system-ocss.onrender.com";
 
       const user = JSON.parse(localStorage.getItem("loggedInUser"));
 
